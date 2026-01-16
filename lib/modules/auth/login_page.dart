@@ -56,41 +56,33 @@ class _LoginPageState extends State<LoginPage> {
         password: passwordController.text,
       );
 
-      final authService = AuthService();
-      final role = await authService.getUserRole();
+      if (!mounted) return;
+      
+      // Navigate based on role (Day 6)
+      final role = await AuthService().getUserRole();
 
       if (!mounted) return;
 
       if (role == 'admin') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const AdminHome()),
-        );
+        Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const AdminHome()));
       } else if (role == 'student') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const StudentHome()),
-        );
+         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const StudentHome()));
       } else if (role == 'trainer') {
-        Navigator.pushReplacement(
-          context,
-          MaterialPageRoute(builder: (_) => const TrainerHome()),
-        );
+         Navigator.pushReplacement(context, MaterialPageRoute(builder: (_) => const TrainerHome()));
       } else {
         ScaffoldMessenger.of(context).showSnackBar(
           const SnackBar(content: Text('Role not assigned')),
         );
       }
+
     } catch (e) {
-      if (!mounted) return;
-      
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text(e.toString())),
-      );
-    } finally {
       if (mounted) {
-        setState(() => loading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(content: Text(e.toString())),
+        );
       }
     }
+
+    if (mounted) setState(() => loading = false);
   }
 }
