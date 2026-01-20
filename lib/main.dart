@@ -1,6 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:supabase_flutter/supabase_flutter.dart';
-import 'modules/auth/auth_gate.dart';
+import 'modules/auth/splash_screen.dart';
 import 'core/theme/app_theme.dart';
 
 Future<void> main() async {
@@ -26,7 +26,7 @@ class MyApp extends StatelessWidget {
         colorScheme: ColorScheme.fromSeed(seedColor: Colors.blue),
       ),
       debugShowCheckedModeBanner: false,
-      home: const AuthGate(),
+      home: const SplashScreen(), // Changed from AuthGate to SplashScreen
     );
   }
 }
