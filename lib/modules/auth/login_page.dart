@@ -347,6 +347,7 @@ class _LoginPageState extends State<LoginPage> {
         password: password,
         data: {
           'full_name': name,
+          'role': 'student', // Default role for new signups
         },
       );
 
@@ -370,7 +371,11 @@ class _LoginPageState extends State<LoginPage> {
         });
       }
     } on AuthException catch (e) {
-      _showError(e.message);
+      if (e.message.contains('invalid') && e.message.contains('email')) {
+        _showError('Invalid email format or domain. If this is a valid email, please try another one or check Supabase settings.');
+      } else {
+        _showError(e.message);
+      }
     } catch (e) {
       _showError('An unexpected error occurred. Please try again.');
     }
@@ -419,7 +424,7 @@ class _LoginPageState extends State<LoginPage> {
     } on AuthException catch (e) {
       _showError(e.message);
     } catch (e) {
-      _showError('Login failed. Please check your connection.');
+      _showError('Login failed: ${e.toString()}');
     }
 
     if (mounted) setState(() => loading = false);

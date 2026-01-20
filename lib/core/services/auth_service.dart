@@ -9,13 +9,18 @@ class AuthService {
     final user = currentUser;
     if (user == null) return null;
 
-    final response = await _client
-        .from('users')
-        .select('role')
-        .eq('id', user.id)
-        .single();
+    try {
+      final response = await _client
+          .from('users')
+          .select('role')
+          .eq('id', user.id)
+          .single();
 
-    return response['role'];
+      return response['role'];
+    } catch (e) {
+      // Return null if user profile is not found or other db error
+      return null;
+    }
   }
 
   Future<void> logout() async {

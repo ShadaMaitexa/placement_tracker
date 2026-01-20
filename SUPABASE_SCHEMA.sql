@@ -167,10 +167,12 @@ ALTER TABLE public.mock_interviews ENABLE ROW LEVEL SECURITY;
 -- ============================================
 -- USERS TABLE POLICIES
 -- ============================================
+DROP POLICY IF EXISTS "Users can view their own data" ON public.users;
 CREATE POLICY "Users can view their own data"
   ON public.users FOR SELECT
   USING (auth.uid() = id);
 
+DROP POLICY IF EXISTS "Admins can view all users" ON public.users;
 CREATE POLICY "Admins can view all users"
   ON public.users FOR SELECT
   USING (
@@ -183,10 +185,12 @@ CREATE POLICY "Admins can view all users"
 -- ============================================
 -- STUDENTS TABLE POLICIES
 -- ============================================
+DROP POLICY IF EXISTS "Anyone authenticated can view students" ON public.students;
 CREATE POLICY "Anyone authenticated can view students"
   ON public.students FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Admins can insert students" ON public.students;
 CREATE POLICY "Admins can insert students"
   ON public.students FOR INSERT
   WITH CHECK (
@@ -196,6 +200,7 @@ CREATE POLICY "Admins can insert students"
     )
   );
 
+DROP POLICY IF EXISTS "Admins can update students" ON public.students;
 CREATE POLICY "Admins can update students"
   ON public.students FOR UPDATE
   USING (
@@ -205,6 +210,7 @@ CREATE POLICY "Admins can update students"
     )
   );
 
+DROP POLICY IF EXISTS "Admins can delete students" ON public.students;
 CREATE POLICY "Admins can delete students"
   ON public.students FOR DELETE
   USING (
@@ -217,6 +223,7 @@ CREATE POLICY "Admins can delete students"
 -- ============================================
 -- COMPANIES TABLE POLICIES
 -- ============================================
+DROP POLICY IF EXISTS "Admins can manage companies" ON public.companies;
 CREATE POLICY "Admins can manage companies"
   ON public.companies FOR ALL
   USING (
@@ -226,6 +233,7 @@ CREATE POLICY "Admins can manage companies"
     )
   );
 
+DROP POLICY IF EXISTS "Students can view companies" ON public.companies;
 CREATE POLICY "Students can view companies"
   ON public.companies FOR SELECT
   USING (auth.uid() IS NOT NULL);
@@ -233,10 +241,12 @@ CREATE POLICY "Students can view companies"
 -- ============================================
 -- PLACEMENT DRIVES POLICIES
 -- ============================================
+DROP POLICY IF EXISTS "Anyone authenticated can view drives" ON public.placement_drives;
 CREATE POLICY "Anyone authenticated can view drives"
   ON public.placement_drives FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Admins can manage drives" ON public.placement_drives;
 CREATE POLICY "Admins can manage drives"
   ON public.placement_drives FOR ALL
   USING (
@@ -249,10 +259,12 @@ CREATE POLICY "Admins can manage drives"
 -- ============================================
 -- PLACEMENT APPLICATIONS POLICIES
 -- ============================================
+DROP POLICY IF EXISTS "Anyone authenticated can view applications" ON public.placement_applications;
 CREATE POLICY "Anyone authenticated can view applications"
   ON public.placement_applications FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Admins can manage applications" ON public.placement_applications;
 CREATE POLICY "Admins can manage applications"
   ON public.placement_applications FOR ALL
   USING (
@@ -265,10 +277,12 @@ CREATE POLICY "Admins can manage applications"
 -- ============================================
 -- APTITUDE TESTS POLICIES
 -- ============================================
+DROP POLICY IF EXISTS "Anyone authenticated can view tests" ON public.aptitude_tests;
 CREATE POLICY "Anyone authenticated can view tests"
   ON public.aptitude_tests FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Admins and trainers can manage tests" ON public.aptitude_tests;
 CREATE POLICY "Admins and trainers can manage tests"
   ON public.aptitude_tests FOR ALL
   USING (
@@ -281,10 +295,12 @@ CREATE POLICY "Admins and trainers can manage tests"
 -- ============================================
 -- APTITUDE RESULTS POLICIES
 -- ============================================
+DROP POLICY IF EXISTS "Anyone authenticated can view results" ON public.aptitude_results;
 CREATE POLICY "Anyone authenticated can view results"
   ON public.aptitude_results FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Admins and trainers can manage results" ON public.aptitude_results;
 CREATE POLICY "Admins and trainers can manage results"
   ON public.aptitude_results FOR ALL
   USING (
@@ -297,10 +313,12 @@ CREATE POLICY "Admins and trainers can manage results"
 -- ============================================
 -- MOCK INTERVIEWS POLICIES
 -- ============================================
+DROP POLICY IF EXISTS "Anyone authenticated can view interviews" ON public.mock_interviews;
 CREATE POLICY "Anyone authenticated can view interviews"
   ON public.mock_interviews FOR SELECT
   USING (auth.uid() IS NOT NULL);
 
+DROP POLICY IF EXISTS "Admins and trainers can manage interviews" ON public.mock_interviews;
 CREATE POLICY "Admins and trainers can manage interviews"
   ON public.mock_interviews FOR ALL
   USING (
@@ -314,6 +332,27 @@ CREATE POLICY "Admins and trainers can manage interviews"
 -- FUNCTIONS AND TRIGGERS
 -- ============================================
 
+-- Function to handle new user signup
+CREATE OR REPLACE FUNCTION public.handle_new_user()
+RETURNS TRIGGER AS $$
+BEGIN
+  INSERT INTO public.users (id, email, role, full_name)
+  VALUES (
+    NEW.id,
+    NEW.email,
+    COALESCE(NEW.raw_user_meta_data->>'role', 'student'), -- Default to student if no role provided
+    NEW.raw_user_meta_data->>'full_name'
+  );
+  RETURN NEW;
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+-- Trigger to call the function on signup
+DROP TRIGGER IF EXISTS on_auth_user_created ON auth.users;
+CREATE TRIGGER on_auth_user_created
+  AFTER INSERT ON auth.users
+  FOR EACH ROW EXECUTE FUNCTION public.handle_new_user();
+
 -- Function to update updated_at timestamp
 CREATE OR REPLACE FUNCTION update_updated_at_column()
 RETURNS TRIGGER AS $$
@@ -324,24 +363,31 @@ END;
 $$ LANGUAGE plpgsql;
 
 -- Apply update trigger to all tables
+DROP TRIGGER IF EXISTS update_users_updated_at ON public.users;
 CREATE TRIGGER update_users_updated_at BEFORE UPDATE ON public.users
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_students_updated_at ON public.students;
 CREATE TRIGGER update_students_updated_at BEFORE UPDATE ON public.students
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_companies_updated_at ON public.companies;
 CREATE TRIGGER update_companies_updated_at BEFORE UPDATE ON public.companies
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_placement_drives_updated_at ON public.placement_drives;
 CREATE TRIGGER update_placement_drives_updated_at BEFORE UPDATE ON public.placement_drives
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_placement_applications_updated_at ON public.placement_applications;
 CREATE TRIGGER update_placement_applications_updated_at BEFORE UPDATE ON public.placement_applications
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_aptitude_tests_updated_at ON public.aptitude_tests;
 CREATE TRIGGER update_aptitude_tests_updated_at BEFORE UPDATE ON public.aptitude_tests
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
+DROP TRIGGER IF EXISTS update_mock_interviews_updated_at ON public.mock_interviews;
 CREATE TRIGGER update_mock_interviews_updated_at BEFORE UPDATE ON public.mock_interviews
   FOR EACH ROW EXECUTE FUNCTION update_updated_at_column();
 
@@ -366,10 +412,9 @@ INSERT INTO public.companies (name, hr_name, hr_email, hr_phone, hiring_roles) V
 ('Tech Corp', 'Sarah Johnson', 'sarah@techcorp.com', '9876543212', ARRAY['Software Engineer', 'Frontend Developer']),
 ('Data Solutions Inc', 'Mike Wilson', 'mike@datasolutions.com', '9876543213', ARRAY['Data Analyst', 'ML Engineer']);
 
--- ============================================
+-- ============================================ 
 -- VIEWS FOR ANALYTICS (OPTIONAL)
--- ============================================
-
+-- ============================================ 
 -- View for placement statistics
 CREATE OR REPLACE VIEW placement_stats AS
 SELECT 
@@ -410,13 +455,13 @@ GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO anon, authenticated;
 -- ============================================
 -- COMPLETION MESSAGE
 -- ============================================
-DO $$
+DO $$ 
 BEGIN
-  RAISE NOTICE '✅ Placement Tracker Database Schema Created Successfully!';
-  RAISE NOTICE '📊 Tables: users, students, companies, placement_drives, placement_applications, aptitude_tests, aptitude_results, mock_interviews';
-  RAISE NOTICE '🔒 RLS Policies: Enabled with role-based access control';
-  RAISE NOTICE '📈 Views: placement_stats, student_performance';
-  RAISE NOTICE '⚡ Next Steps:';
+  RAISE NOTICE ' Placement Tracker Database Schema Created Successfully!';
+  RAISE NOTICE ' Tables: users, students, companies, placement_drives, placement_applications, aptitude_tests, aptitude_results, mock_interviews';
+  RAISE NOTICE ' RLS Policies: Enabled with role-based access control';
+  RAISE NOTICE ' Views: placement_stats, student_performance';
+  RAISE NOTICE ' Next Steps:';
   RAISE NOTICE '   1. Create test users in Supabase Auth';
   RAISE NOTICE '   2. Add their IDs to the users table with appropriate roles';
   RAISE NOTICE '   3. Test the app with different role logins';
