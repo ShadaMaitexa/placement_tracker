@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:placement_tracker/core/services/aptitude_service.dart';
 import 'package:placement_tracker/core/services/auth_service.dart';
 import 'package:placement_tracker/core/services/student_service.dart';
+import 'package:placement_tracker/core/utils/responsive.dart';
 import 'package:placement_tracker/modules/aptitude/models/aptitude_model.dart';
 import 'package:placement_tracker/modules/student/models/student_model.dart';
 
@@ -93,15 +94,33 @@ class _AptitudeResultListPageState extends State<AptitudeResultListPage> {
           ? const Center(child: CircularProgressIndicator())
           : _results.isEmpty 
               ? _buildEmptyState()
-              : RefreshIndicator(
-                  onRefresh: _loadResults,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _results.length,
-                    itemBuilder: (context, index) {
-                      final res = _results[index];
-                      return _buildResultCard(res);
-                    },
+              : Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: RefreshIndicator(
+                      onRefresh: _loadResults,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: CustomScrollView(
+                          slivers: [
+                            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                            SliverGrid(
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: context.responsive(1, tablet: 2, desktop: 3),
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                                childAspectRatio: context.responsive(3.5, tablet: 2.8, desktop: 2.5),
+                              ),
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) => _buildResultCard(_results[index]),
+                                itemCount: _results.length,
+                              ),
+                            ),
+                            const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
     );
@@ -112,31 +131,33 @@ class _AptitudeResultListPageState extends State<AptitudeResultListPage> {
     final color = percentage >= 70 ? const Color(0xFF10B981) : percentage >= 40 ? const Color(0xFFF59E0B) : const Color(0xFFEF4444);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
         border: Border.all(color: const Color(0xFFE2E8F0)),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-        leading: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: color.withValues(alpha: 0.1),
-            shape: BoxShape.circle,
+      child: Center(
+        child: ListTile(
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+          leading: Container(
+            width: 45,
+            height: 45,
+            decoration: BoxDecoration(
+              color: color.withValues(alpha: 0.1),
+              shape: BoxShape.circle,
+            ),
+            alignment: Alignment.center,
+            child: Text('$percentage%', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13, color: color)),
           ),
-          alignment: Alignment.center,
-          child: Text('$percentage%', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: color)),
-        ),
-        title: Text(res.testTitle ?? 'General Aptitude', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            if (_userRole != 'student') Text(res.studentName ?? 'Student', style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF3B82F6))),
-            Text('Score: ${res.score}/${res.maxScore} • Time: ${res.timeTakenMinutes}m', style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF64748B))),
-          ],
+          title: Text(res.testTitle ?? 'General Aptitude', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15), maxLines: 1, overflow: TextOverflow.ellipsis),
+          subtitle: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (_userRole != 'student') Text(res.studentName ?? 'Student', style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF3B82F6)), maxLines: 1, overflow: TextOverflow.ellipsis),
+              Text('Score: ${res.score}/${res.maxScore} • Time: ${res.timeTakenMinutes}m', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF64748B))),
+            ],
+          ),
         ),
       ),
     );
@@ -201,78 +222,83 @@ class _AddResultPageState extends State<AddResultPage> {
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF0F172A),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            children: [
-              Container(
-                padding: const EdgeInsets.all(16),
-                decoration: BoxDecoration(
-                  color: Colors.white,
-                  borderRadius: BorderRadius.circular(16),
-                  boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
-                ),
-                child: Column(
-                  children: [
-                    DropdownButtonFormField<String>(
-                      value: _selectedStudent,
-                      hint: const Text('Select Student'),
-                      items: _students.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))).toList(),
-                      onChanged: (v) => setState(() => _selectedStudent = v),
-                      decoration: InputDecoration(
-                        labelText: 'Student',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 600),
+          child: SingleChildScrollView(
+            child: Padding(
+              padding: const EdgeInsets.all(20),
+              child: Column(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(16),
+                    decoration: BoxDecoration(
+                      color: Colors.white,
+                      borderRadius: BorderRadius.circular(16),
+                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
                     ),
-                    const SizedBox(height: 16),
-                    DropdownButtonFormField<String>(
-                      value: _selectedTest,
-                      hint: const Text('Select Test'),
-                      items: _tests.map((t) => DropdownMenuItem(value: t.id, child: Text(t.title))).toList(),
-                      onChanged: (v) => setState(() => _selectedTest = v),
-                      decoration: InputDecoration(
-                        labelText: 'Test',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
+                    child: Column(
+                      children: [
+                        DropdownButtonFormField<String>(
+                          value: _selectedStudent,
+                          hint: const Text('Select Student'),
+                          items: _students.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))).toList(),
+                          onChanged: (v) => setState(() => _selectedStudent = v),
+                          decoration: InputDecoration(
+                            labelText: 'Student',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        DropdownButtonFormField<String>(
+                          value: _selectedTest,
+                          hint: const Text('Select Test'),
+                          items: _tests.map((t) => DropdownMenuItem(value: t.id, child: Text(t.title))).toList(),
+                          onChanged: (v) => setState(() => _selectedTest = v),
+                          decoration: InputDecoration(
+                            labelText: 'Test',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _scoreCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Score Obtained',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                        TextField(
+                          controller: _timeCtrl,
+                          keyboardType: TextInputType.number,
+                          decoration: InputDecoration(
+                            labelText: 'Time Taken (mins)',
+                            border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                          ),
+                        ),
+                      ],
                     ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _scoreCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Score Obtained',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                    const SizedBox(height: 16),
-                    TextField(
-                      controller: _timeCtrl,
-                      keyboardType: TextInputType.number,
-                      decoration: InputDecoration(
-                        labelText: 'Time Taken (mins)',
-                        border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                   ),
-                  child: _isLoading 
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Text('Save Result', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                ),
+                  const SizedBox(height: 32),
+                  SizedBox(
+                    width: double.infinity,
+                    child: ElevatedButton(
+                      onPressed: _isLoading ? null : _save,
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF3B82F6),
+                        padding: const EdgeInsets.symmetric(vertical: 18),
+                        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                      ),
+                      child: _isLoading 
+                        ? const CircularProgressIndicator(color: Colors.white)
+                        : Text('Save Result', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                    ),
+                  ),
+                ],
               ),
-            ],
+            ),
           ),
         ),
       ),

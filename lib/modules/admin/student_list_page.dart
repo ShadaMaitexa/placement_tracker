@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:placement_tracker/core/services/student_service.dart';
+import 'package:placement_tracker/core/utils/responsive.dart';
 import 'package:placement_tracker/modules/student/models/student_model.dart';
 import 'add_student_page.dart';
 import 'student_detail_page.dart';
@@ -78,24 +79,42 @@ class _StudentListPageState extends State<StudentListPage> {
         label: Text('Add Student', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         icon: const Icon(Icons.add),
       ),
-      body: Column(
-        children: [
-          _buildSearchBar(),
-          Expanded(
-            child: _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : _filteredStudents.isEmpty
-                    ? _buildEmptyState()
-                    : ListView.builder(
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                        itemCount: _filteredStudents.length,
-                        itemBuilder: (context, index) {
-                          final student = _filteredStudents[index];
-                          return _buildStudentCard(student);
-                        },
-                      ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: Column(
+            children: [
+              _buildSearchBar(),
+              Expanded(
+                child: _isLoading
+                    ? const Center(child: CircularProgressIndicator())
+                    : _filteredStudents.isEmpty
+                        ? _buildEmptyState()
+                        : Padding(
+                            padding: const EdgeInsets.symmetric(horizontal: 16),
+                            child: CustomScrollView(
+                              slivers: [
+                                const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                                SliverGrid(
+                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                    crossAxisCount: context.responsive(1, tablet: 2, desktop: 3),
+                                    crossAxisSpacing: 16,
+                                    mainAxisSpacing: 16,
+                                    childAspectRatio: context.responsive(2.8, tablet: 2.2, desktop: 2.0),
+                                  ),
+                                  delegate: SliverChildBuilderDelegate(
+                                    (context, index) => _buildStudentCard(_filteredStudents[index]),
+                                    itemCount: _filteredStudents.length,
+                                  ),
+                                ),
+                                const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                              ],
+                            ),
+                          ),
+              ),
+            ],
           ),
-        ],
+        ),
       ),
     );
   }
@@ -143,7 +162,6 @@ class _StudentListPageState extends State<StudentListPage> {
 
   Widget _buildStudentCard(Student student) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 12),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -169,6 +187,7 @@ class _StudentListPageState extends State<StudentListPage> {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Text(
                         student.name,
@@ -177,6 +196,8 @@ class _StudentListPageState extends State<StudentListPage> {
                           fontWeight: FontWeight.bold,
                           color: const Color(0xFF0F172A),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(
@@ -185,6 +206,8 @@ class _StudentListPageState extends State<StudentListPage> {
                           fontSize: 13,
                           color: const Color(0xFF64748B),
                         ),
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
                       ),
                       const SizedBox(height: 4),
                       Text(

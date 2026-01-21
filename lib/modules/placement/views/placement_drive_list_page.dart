@@ -3,6 +3,7 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:placement_tracker/core/services/auth_service.dart';
 import 'package:placement_tracker/core/services/placement_service.dart';
 import 'package:placement_tracker/core/services/student_service.dart';
+import 'package:placement_tracker/core/utils/responsive.dart';
 import 'package:placement_tracker/modules/placement/models/placement_drive.dart';
 import 'add_placement_drive_page.dart';
 
@@ -114,15 +115,33 @@ class _PlacementDriveListPageState extends State<PlacementDriveListPage> {
           ? const Center(child: CircularProgressIndicator())
           : _drives.isEmpty
               ? _buildEmptyState()
-              : RefreshIndicator(
-                  onRefresh: _loadDrives,
-                  child: ListView.builder(
-                    padding: const EdgeInsets.all(16),
-                    itemCount: _drives.length,
-                    itemBuilder: (context, index) {
-                      final drive = _drives[index];
-                      return _buildDriveCard(drive, isAdmin);
-                    },
+              : Center(
+                  child: ConstrainedBox(
+                    constraints: const BoxConstraints(maxWidth: 1200),
+                    child: RefreshIndicator(
+                      onRefresh: _loadDrives,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 16),
+                        child: CustomScrollView(
+                          slivers: [
+                            const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                            SliverGrid(
+                              gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                crossAxisCount: context.responsive(1, tablet: 2, desktop: 3),
+                                crossAxisSpacing: 16,
+                                mainAxisSpacing: 16,
+                                childAspectRatio: context.responsive(2.8, tablet: 2.2, desktop: 2.0),
+                              ),
+                              delegate: SliverChildBuilderDelegate(
+                                (context, index) => _buildDriveCard(_drives[index], isAdmin),
+                                itemCount: _drives.length,
+                              ),
+                            ),
+                            const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                          ],
+                        ),
+                      ),
+                    ),
                   ),
                 ),
     );
@@ -132,7 +151,6 @@ class _PlacementDriveListPageState extends State<PlacementDriveListPage> {
     final isApplied = _appliedDriveIds.contains(drive.id);
 
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white,
         borderRadius: BorderRadius.circular(16),
@@ -163,11 +181,12 @@ class _PlacementDriveListPageState extends State<PlacementDriveListPage> {
                 Expanded(
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Text(drive.title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 17)),
+                      Text(drive.title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16), maxLines: 1, overflow: TextOverflow.ellipsis),
                       Text('${drive.companyName ?? 'Unknown Company'} • ${drive.jobRole}', 
-                        style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF64748B))),
-                      const SizedBox(height: 8),
+                        style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)), maxLines: 1, overflow: TextOverflow.ellipsis),
+                      const SizedBox(height: 4),
                       Row(
                         children: [
                           Icon(Icons.payments_outlined, size: 14, color: Colors.grey[400]),
@@ -181,20 +200,21 @@ class _PlacementDriveListPageState extends State<PlacementDriveListPage> {
                 ),
                 Column(
                   crossAxisAlignment: CrossAxisAlignment.end,
+                  mainAxisAlignment: MainAxisAlignment.center,
                   children: [
                     _buildStatusChip(drive.status),
                     const SizedBox(height: 8),
-                    if (!isAdmin && drive.status == 'upcoming' || drive.status == 'ongoing')
+                    if (!isAdmin && (drive.status == 'upcoming' || drive.status == 'ongoing'))
                       ElevatedButton(
                         onPressed: isApplied ? null : () => _handleApply(drive.id!),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: isApplied ? Colors.grey : const Color(0xFF3B82F6),
                           foregroundColor: Colors.white,
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 0),
-                          minimumSize: const Size(80, 30),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 0),
+                          minimumSize: const Size(60, 28),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                         ),
-                        child: Text(isApplied ? 'Applied' : 'Apply', style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.bold)),
+                        child: Text(isApplied ? 'Applied' : 'Apply', style: GoogleFonts.inter(fontSize: 11, fontWeight: FontWeight.bold)),
                       ),
                   ],
                 ),
