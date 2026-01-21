@@ -11,14 +11,42 @@ class AuthService {
         email: email,
         password: password,
       );
+
+      // Post-login check for students to ensure they are still in the authorized list
+      final role = await getUserRole(response.user?.id);
+      if (role == 'student') {
+        final bool isAuthorized = await _client.rpc(
+          'check_student_authorized',
+          params: {'p_email': email},
+        );
+
+        if (!isAuthorized) {
+          await logout();
+          throw Exception('Your account is no longer authorized by the Placement Officer.');
+        }
+      }
+
       return response;
     } catch (e) {
+      if (e is Exception) rethrow;
       throw Exception('Login failed: $e');
     }
   }
 
   Future<AuthResponse> signUp(String email, String password, String fullName, String role) async {
     try {
+      // If student, check if email is pre-authorized by Placement Officer
+      if (role == 'student') {
+        final bool isAuthorized = await _client.rpc(
+          'check_student_authorized',
+          params: {'p_email': email},
+        );
+
+        if (!isAuthorized) {
+          throw Exception('This email is not authorized by the Placement Officer. Please contact the office to be added.');
+        }
+      }
+
       final response = await _client.auth.signUp(
         email: email,
         password: password,
@@ -29,6 +57,7 @@ class AuthService {
       );
       return response;
     } catch (e) {
+      if (e is Exception) rethrow;
       throw Exception('Signup failed: $e');
     }
   }

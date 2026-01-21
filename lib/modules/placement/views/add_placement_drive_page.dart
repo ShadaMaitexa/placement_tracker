@@ -18,12 +18,17 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
   final _placementService = PlacementDriveService();
   final _companyService = CompanyService();
 
+  late TextEditingController _titleCtrl;
   late TextEditingController _roleCtrl;
   late TextEditingController _descCtrl;
   late TextEditingController _salaryCtrl;
+  late TextEditingController _locationCtrl;
+  late TextEditingController _eligibilityCtrl;
+  
   String? _selectedCompanyId;
   DateTime? _driveDate;
-  String _status = 'scheduled';
+  DateTime? _deadlineDate;
+  String _status = 'upcoming';
 
   List<Company> _companies = [];
   bool _isLoading = false;
@@ -31,11 +36,16 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
   @override
   void initState() {
     super.initState();
+    _titleCtrl = TextEditingController(text: widget.drive?.title);
     _roleCtrl = TextEditingController(text: widget.drive?.jobRole);
     _descCtrl = TextEditingController(text: widget.drive?.description);
     _salaryCtrl = TextEditingController(text: widget.drive?.salaryPackage);
+    _locationCtrl = TextEditingController(text: widget.drive?.location);
+    _eligibilityCtrl = TextEditingController(text: widget.drive?.eligibilityCriteria);
+    
     _selectedCompanyId = widget.drive?.companyId;
     _driveDate = widget.drive?.driveDate;
+    _deadlineDate = widget.drive?.applicationDeadline;
     if (widget.drive != null) _status = widget.drive!.status;
     
     _loadCompanies();
@@ -87,11 +97,20 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
                     validator: (v) => v == null ? 'Required' : null,
                   ),
                   const SizedBox(height: 16),
+                  _textField(_titleCtrl, 'Drive Title (e.g. Campus Recruitment 2024)', Icons.title),
                   _textField(_roleCtrl, 'Job Role / Designation', Icons.work_outline),
                   _textField(_salaryCtrl, 'Salary Package (e.g. 8.5 LPA)', Icons.payments_outlined),
+                  _textField(_locationCtrl, 'Location (e.g. Remote, Bangalore)', Icons.location_on_outlined),
                 ]),
                 const SizedBox(height: 24),
-                _buildSectionTitle('Schedule & Description'),
+                _buildSectionTitle('Criteria & Description'),
+                const SizedBox(height: 16),
+                _buildCard([
+                   _textField(_eligibilityCtrl, 'Eligibility Criteria (e.g. 70% in 10th/12th)', Icons.checklist_outlined),
+                   _textField(_descCtrl, 'Job Description', Icons.description_outlined, maxLines: 4),
+                ]),
+                const SizedBox(height: 24),
+                _buildSectionTitle('Schedule & Deadlines'),
                 const SizedBox(height: 16),
                 _buildCard([
                   ListTile(
@@ -108,7 +127,19 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
                     ),
                   ),
                   const Divider(),
-                  _textField(_descCtrl, 'Job Description', Icons.description_outlined, maxLines: 4),
+                  ListTile(
+                    contentPadding: EdgeInsets.zero,
+                    onTap: () async {
+                      final d = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime(2030));
+                      if (d != null) setState(() => _deadlineDate = d);
+                    },
+                    leading: const Icon(Icons.timer_outlined, color: Color(0xFFF59E0B)),
+                    title: Text('Application Deadline', style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF64748B))),
+                    subtitle: Text(
+                      _deadlineDate == null ? 'Select Deadline' : '${_deadlineDate!.day}/${_deadlineDate!.month}/${_deadlineDate!.year}',
+                      style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+                    ),
+                  ),
                 ]),
                 const SizedBox(height: 24),
                 _buildSectionTitle('Current Status'),
@@ -116,7 +147,7 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
                 _buildCard([
                   DropdownButtonFormField<String>(
                     value: _status,
-                    items: ['scheduled', 'completed', 'cancelled']
+                    items: ['upcoming', 'ongoing', 'completed', 'cancelled']
                         .map((s) => DropdownMenuItem(value: s, child: Text(s.toUpperCase())))
                         .toList(),
                     onChanged: (v) => setState(() => _status = v!),
@@ -139,7 +170,7 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
                     ),
                     child: _isLoading 
                       ? const CircularProgressIndicator(color: Colors.white)
-                      : Text('Save Placement Drive', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                      : Text('Save Placement Drive', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
                 ),
                 const SizedBox(height: 40),
@@ -151,7 +182,7 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
     );
   }
 
-   Widget _buildSectionTitle(String title) {
+  Widget _buildSectionTitle(String title) {
     return Text(title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)));
   }
 
@@ -173,7 +204,7 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
       child: TextFormField(
         controller: c,
         maxLines: maxLines,
-        validator: (v) => label.contains('Role') && (v == null || v.isEmpty) ? 'Required' : null,
+        validator: (v) => (label.contains('Role') || label.contains('Title')) && (v == null || v.isEmpty) ? 'Required' : null,
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
@@ -191,10 +222,14 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
       final drive = PlacementDrive(
         id: widget.drive?.id,
         companyId: _selectedCompanyId!,
+        title: _titleCtrl.text.isEmpty ? _roleCtrl.text : _titleCtrl.text,
         jobRole: _roleCtrl.text,
         description: _descCtrl.text,
         salaryPackage: _salaryCtrl.text,
+        location: _locationCtrl.text,
+        eligibilityCriteria: _eligibilityCtrl.text,
         driveDate: _driveDate,
+        applicationDeadline: _deadlineDate,
         status: _status,
       );
 

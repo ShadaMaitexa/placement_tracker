@@ -22,7 +22,7 @@ CREATE TABLE IF NOT EXISTS public.students (
   id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name TEXT NOT NULL,
   phone TEXT,
-  email TEXT,
+  email TEXT UNIQUE NOT NULL,
   college_name TEXT,
   qualification TEXT,
   passing_year INTEGER,
@@ -185,6 +185,16 @@ BEGIN
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;
 
+-- Function to check if student email exists (used during signup)
+CREATE OR REPLACE FUNCTION public.check_student_authorized(p_email TEXT)
+RETURNS BOOLEAN AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.students WHERE email = p_email
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- ============================================
 -- USERS TABLE POLICIES
 -- ============================================
@@ -328,10 +338,13 @@ BEGIN
     m_full_name
   );
   
-  -- If role is student, also create a basic entry in students table
+  -- If role is student, also create a basic entry in students table if doesn't exist
+  -- If it already exists (added by officer), we don't need to do anything here
+  -- as the record already has the officer's provided details.
   IF m_role = 'student' THEN
     INSERT INTO public.students (id, name, email, eligibility_status)
-    VALUES (gen_random_uuid(), m_full_name, NEW.email, 'training');
+    VALUES (gen_random_uuid(), m_full_name, NEW.email, 'training')
+    ON CONFLICT (email) DO NOTHING;
   END IF;
 
   RETURN NEW;

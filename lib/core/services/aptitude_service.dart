@@ -39,6 +39,19 @@ class AptitudeService {
     }
   }
 
+  Future<List<AptitudeResult>> getResultsForStudent(String studentId) async {
+    try {
+      final response = await _client
+          .from('aptitude_results')
+          .select('*, students(name), aptitude_tests(title)')
+          .eq('student_id', studentId)
+          .order('created_at', ascending: false);
+      return (response as List).map((json) => AptitudeResult.fromJson(json)).toList();
+    } catch (e) {
+      throw Exception('Failed to load student results: $e');
+    }
+  }
+
   Future<void> addResult(AptitudeResult result) async {
     try {
       await _client.from('aptitude_results').insert(result.toJson());

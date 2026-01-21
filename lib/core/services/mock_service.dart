@@ -17,6 +17,19 @@ class MockInterviewService {
     }
   }
 
+  Future<List<MockInterview>> getInterviewsForStudent(String studentId) async {
+    try {
+      final response = await _client
+          .from('mock_interviews')
+          .select('*, students(name)')
+          .eq('student_id', studentId)
+          .order('conducted_at', ascending: false);
+      return (response as List).map((json) => MockInterview.fromJson(json)).toList();
+    } catch (e) {
+      throw Exception('Failed to load student interviews: $e');
+    }
+  }
+
   Future<void> addInterview(MockInterview interview) async {
     try {
       await _client.from('mock_interviews').insert(interview.toJson());

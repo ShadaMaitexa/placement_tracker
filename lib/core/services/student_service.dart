@@ -47,4 +47,34 @@ class StudentService {
       throw Exception('Failed to delete student: $e');
     }
   }
+
+  Future<Student?> getStudentByEmail(String email) async {
+    try {
+      final response = await _client
+          .from('students')
+          .select()
+          .eq('email', email)
+          .maybeSingle();
+
+      if (response == null) return null;
+      return Student.fromJson(response);
+    } catch (e) {
+      throw Exception('Failed to fetch student profile: $e');
+    }
+  }
+
+  Future<Student?> getStudentById(String id) async {
+    try {
+      final response = await _client
+          .from('students')
+          .select()
+          .eq('id', id)
+          .maybeSingle();
+
+      if (response == null) return null;
+      return Student.fromJson(response);
+    } catch (e) {
+      throw Exception('Failed to fetch student by ID: $e');
+    }
+  }
 }

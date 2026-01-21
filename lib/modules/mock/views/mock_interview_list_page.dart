@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
+import 'package:placement_tracker/core/services/auth_service.dart';
 import 'package:placement_tracker/core/services/mock_service.dart';
 import 'package:placement_tracker/core/services/student_service.dart';
 import 'package:placement_tracker/modules/mock/models/mock_interview.dart';
@@ -77,7 +78,7 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
                   ),
                   child: _isLoading 
                     ? const CircularProgressIndicator(color: Colors.white)
-                    : Text('Save Interview Results', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                    : Text('Save Interview Results', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
               ),
               const SizedBox(height: 40),
@@ -242,9 +243,63 @@ class MockInterviewListPage extends StatefulWidget {
 
 class _MockInterviewListPageState extends State<MockInterviewListPage> {
   final _service = MockInterviewService();
+  final _authService = AuthService();
+  final _studentService = StudentService();
+  
+  List<MockInterview> _interviews = [];
+  bool _isLoading = true;
+  String? _userRole;
+  String? _studentId;
+
+  @override
+  void initState() {
+    super.initState();
+    _initData();
+  }
+
+  Future<void> _initData() async {
+    setState(() => _isLoading = true);
+    try {
+      final user = _authService.currentUser;
+      if (user != null) {
+        _userRole = await _authService.getUserRole(user.id);
+        if (_userRole == 'student') {
+          final student = await _studentService.getStudentByEmail(user.email!);
+          if (student != null) {
+            _studentId = student.id;
+          }
+        }
+      }
+      await _loadInterviews();
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  Future<void> _loadInterviews() async {
+    try {
+      List<MockInterview> data;
+      if (_userRole == 'student' && _studentId != null) {
+        data = await _service.getInterviewsForStudent(_studentId!);
+      } else {
+        data = await _service.getInterviews();
+      }
+      if (mounted) {
+        setState(() {
+          _interviews = data;
+        });
+      }
+    } catch (e) {
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
+    final isAdmin = _userRole == 'admin' || _userRole == 'trainer';
+
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
@@ -253,31 +308,30 @@ class _MockInterviewListPageState extends State<MockInterviewListPage> {
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF0F172A),
       ),
-      floatingActionButton: FloatingActionButton.extended(
+      floatingActionButton: isAdmin ? FloatingActionButton.extended(
         onPressed: () async {
           final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddMockInterviewPage()));
-          if (result == true) setState(() {});
+          if (result == true) _loadInterviews();
         },
         backgroundColor: const Color(0xFF3B82F6),
         label: Text('Record Interview', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         icon: const Icon(Icons.add),
-      ),
-      body: FutureBuilder<List<MockInterview>>(
-        future: _service.getInterviews(),
-        builder: (context, snapshot) {
-          if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-          if (!snapshot.hasData || snapshot.data!.isEmpty) return _buildEmptyState();
-
-          return ListView.builder(
-            padding: const EdgeInsets.all(16),
-            itemCount: snapshot.data!.length,
-            itemBuilder: (context, index) {
-              final interview = snapshot.data![index];
-              return _buildInterviewCard(interview);
-            },
-          );
-        },
-      ),
+      ) : null,
+      body: _isLoading 
+          ? const Center(child: CircularProgressIndicator())
+          : _interviews.isEmpty 
+              ? _buildEmptyState()
+              : RefreshIndicator(
+                  onRefresh: _loadInterviews,
+                  child: ListView.builder(
+                    padding: const EdgeInsets.all(16),
+                    itemCount: _interviews.length,
+                    itemBuilder: (context, index) {
+                      final interview = _interviews[index];
+                      return _buildInterviewCard(interview);
+                    },
+                  ),
+                ),
     );
   }
 
@@ -301,7 +355,7 @@ class _MockInterviewListPageState extends State<MockInterviewListPage> {
           child: Icon(_getTypeIcon(interview.interviewType), color: _getStatusColor(interview.status)),
         ),
         title: Text(
-          interview.studentName ?? 'Unknown Student',
+          interview.studentName ?? 'Student',
           style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16),
         ),
         subtitle: Text(
