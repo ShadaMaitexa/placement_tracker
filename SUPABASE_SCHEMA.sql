@@ -9,7 +9,7 @@
 CREATE TABLE IF NOT EXISTS public.users (
   id UUID PRIMARY KEY REFERENCES auth.users(id) ON DELETE CASCADE,
   email TEXT UNIQUE NOT NULL,
-  role TEXT NOT NULL CHECK (role IN ('admin', 'student', 'trainer')),
+  role TEXT NOT NULL CHECK (role IN ('admin', 'student', 'trainer', 'company')),
   full_name TEXT,
   phone TEXT,
   created_at TIMESTAMP WITH TIME ZONE DEFAULT NOW(),
@@ -131,6 +131,7 @@ CREATE TABLE IF NOT EXISTS public.mock_interviews (
   communication_score INTEGER CHECK (communication_score BETWEEN 1 AND 10),
   technical_score INTEGER CHECK (technical_score BETWEEN 1 AND 10),
   confidence_score INTEGER CHECK (confidence_score BETWEEN 1 AND 10),
+  body_language_score INTEGER CHECK (body_language_score BETWEEN 1 AND 10),
   overall_status TEXT CHECK (overall_status IN ('ready', 'needs_improvement', 'not_ready')),
   feedback TEXT,
   voice_note_url TEXT,
@@ -164,6 +165,26 @@ ALTER TABLE public.aptitude_tests ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.aptitude_results ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.mock_interviews ENABLE ROW LEVEL SECURITY;
 
+CREATE OR REPLACE FUNCTION public.is_admin()
+RETURNS boolean AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.users
+    WHERE id = auth.uid() AND role = 'admin'
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
+CREATE OR REPLACE FUNCTION public.has_role(target_roles TEXT[])
+RETURNS boolean AS $$
+BEGIN
+  RETURN EXISTS (
+    SELECT 1 FROM public.users
+    WHERE id = auth.uid() AND role = ANY(target_roles)
+  );
+END;
+$$ LANGUAGE plpgsql SECURITY DEFINER;
+
 -- ============================================
 -- USERS TABLE POLICIES
 -- ============================================
@@ -175,12 +196,7 @@ CREATE POLICY "Users can view their own data"
 DROP POLICY IF EXISTS "Admins can view all users" ON public.users;
 CREATE POLICY "Admins can view all users"
   ON public.users FOR SELECT
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.users
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (is_admin());
 
 -- ============================================
 -- STUDENTS TABLE POLICIES
@@ -193,32 +209,17 @@ CREATE POLICY "Anyone authenticated can view students"
 DROP POLICY IF EXISTS "Admins can insert students" ON public.students;
 CREATE POLICY "Admins can insert students"
   ON public.students FOR INSERT
-  WITH CHECK (
-    EXISTS (
-      SELECT 1 FROM public.users
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  WITH CHECK (is_admin());
 
 DROP POLICY IF EXISTS "Admins can update students" ON public.students;
 CREATE POLICY "Admins can update students"
   ON public.students FOR UPDATE
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.users
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (is_admin());
 
 DROP POLICY IF EXISTS "Admins can delete students" ON public.students;
 CREATE POLICY "Admins can delete students"
   ON public.students FOR DELETE
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.users
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (is_admin());
 
 -- ============================================
 -- COMPANIES TABLE POLICIES
@@ -226,12 +227,7 @@ CREATE POLICY "Admins can delete students"
 DROP POLICY IF EXISTS "Admins can manage companies" ON public.companies;
 CREATE POLICY "Admins can manage companies"
   ON public.companies FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.users
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (is_admin());
 
 DROP POLICY IF EXISTS "Students can view companies" ON public.companies;
 CREATE POLICY "Students can view companies"
@@ -249,12 +245,7 @@ CREATE POLICY "Anyone authenticated can view drives"
 DROP POLICY IF EXISTS "Admins can manage drives" ON public.placement_drives;
 CREATE POLICY "Admins can manage drives"
   ON public.placement_drives FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.users
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (is_admin());
 
 -- ============================================
 -- PLACEMENT APPLICATIONS POLICIES
@@ -267,12 +258,7 @@ CREATE POLICY "Anyone authenticated can view applications"
 DROP POLICY IF EXISTS "Admins can manage applications" ON public.placement_applications;
 CREATE POLICY "Admins can manage applications"
   ON public.placement_applications FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.users
-      WHERE id = auth.uid() AND role = 'admin'
-    )
-  );
+  USING (is_admin());
 
 -- ============================================
 -- APTITUDE TESTS POLICIES
@@ -285,12 +271,7 @@ CREATE POLICY "Anyone authenticated can view tests"
 DROP POLICY IF EXISTS "Admins and trainers can manage tests" ON public.aptitude_tests;
 CREATE POLICY "Admins and trainers can manage tests"
   ON public.aptitude_tests FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.users
-      WHERE id = auth.uid() AND role IN ('admin', 'trainer')
-    )
-  );
+  USING (has_role(ARRAY['admin', 'trainer']));
 
 -- ============================================
 -- APTITUDE RESULTS POLICIES
@@ -303,12 +284,7 @@ CREATE POLICY "Anyone authenticated can view results"
 DROP POLICY IF EXISTS "Admins and trainers can manage results" ON public.aptitude_results;
 CREATE POLICY "Admins and trainers can manage results"
   ON public.aptitude_results FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.users
-      WHERE id = auth.uid() AND role IN ('admin', 'trainer')
-    )
-  );
+  USING (has_role(ARRAY['admin', 'trainer']));
 
 -- ============================================
 -- MOCK INTERVIEWS POLICIES
@@ -321,12 +297,7 @@ CREATE POLICY "Anyone authenticated can view interviews"
 DROP POLICY IF EXISTS "Admins and trainers can manage interviews" ON public.mock_interviews;
 CREATE POLICY "Admins and trainers can manage interviews"
   ON public.mock_interviews FOR ALL
-  USING (
-    EXISTS (
-      SELECT 1 FROM public.users
-      WHERE id = auth.uid() AND role IN ('admin', 'trainer')
-    )
-  );
+  USING (has_role(ARRAY['admin', 'trainer']));
 
 -- ============================================
 -- FUNCTIONS AND TRIGGERS
@@ -335,14 +306,38 @@ CREATE POLICY "Admins and trainers can manage interviews"
 -- Function to handle new user signup
 CREATE OR REPLACE FUNCTION public.handle_new_user()
 RETURNS TRIGGER AS $$
+DECLARE
+  default_role TEXT := 'student';
+  m_full_name TEXT;
+  m_role TEXT;
 BEGIN
+  -- Extract metadata safely
+  m_full_name := COALESCE(NEW.raw_user_meta_data->>'full_name', '');
+  m_role := COALESCE(NEW.raw_user_meta_data->>'role', default_role);
+  
+  -- Ensure role is valid
+  IF m_role NOT IN ('admin', 'student', 'trainer', 'company') THEN
+    m_role := default_role;
+  END IF;
+
   INSERT INTO public.users (id, email, role, full_name)
   VALUES (
     NEW.id,
     NEW.email,
-    COALESCE(NEW.raw_user_meta_data->>'role', 'student'), -- Default to student if no role provided
-    NEW.raw_user_meta_data->>'full_name'
+    m_role,
+    m_full_name
   );
+  
+  -- If role is student, also create a basic entry in students table
+  IF m_role = 'student' THEN
+    INSERT INTO public.students (id, name, email, eligibility_status)
+    VALUES (gen_random_uuid(), m_full_name, NEW.email, 'training');
+  END IF;
+
+  RETURN NEW;
+EXCEPTION WHEN OTHERS THEN
+  -- Fallback to just returning NEW so authentication doesn't fail
+  -- even if profile creation fails
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER;

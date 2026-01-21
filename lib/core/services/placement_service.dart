@@ -9,7 +9,7 @@ class PlacementDriveService {
     try {
       final response = await _client
           .from('placement_drives')
-          .select('*, companies(company_name)')
+          .select('*, companies(name)')
           .order('drive_date', ascending: false);
 
       final data = response as List<dynamic>;

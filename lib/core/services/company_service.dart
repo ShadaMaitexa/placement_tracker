@@ -10,7 +10,7 @@ class CompanyService {
       final response = await _client
           .from('companies')
           .select()
-          .order('company_name', ascending: true);
+          .order('name', ascending: true);
 
       final data = response as List<dynamic>;
       return data.map((json) => Company.fromJson(json)).toList();

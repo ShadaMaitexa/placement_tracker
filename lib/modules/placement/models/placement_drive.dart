@@ -30,7 +30,7 @@ class PlacementDrive {
       driveDate: json['drive_date'] != null ? DateTime.parse(json['drive_date']) : null,
       salaryPackage: json['salary_package'],
       status: json['status'] ?? 'scheduled',
-      companyName: json['companies'] != null ? json['companies']['company_name'] : null,
+      companyName: json['companies'] != null ? json['companies']['name'] : null,
     );
   }
 

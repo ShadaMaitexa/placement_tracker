@@ -1,9 +1,10 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:placement_tracker/core/services/company_service.dart';
 import 'package:placement_tracker/modules/company/models/company.dart';
 
 class AddCompanyPage extends StatefulWidget {
-  final Company? company; // If provided, edit mode
+  final Company? company;
 
   const AddCompanyPage({super.key, this.company});
 
@@ -17,9 +18,11 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
 
   late TextEditingController _nameCtrl;
   late TextEditingController _hrCtrl;
+  late TextEditingController _hrDesignationCtrl;
   late TextEditingController _phoneCtrl;
   late TextEditingController _emailCtrl;
   late TextEditingController _linkedinCtrl;
+  late TextEditingController _roleCtrl;
   DateTime? _lastContacted;
   DateTime? _followUpDate;
 
@@ -28,82 +31,133 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
   @override
   void initState() {
     super.initState();
-    _nameCtrl = TextEditingController(text: widget.company?.companyName);
-    _hrCtrl = TextEditingController(text: widget.company?.hrName);
-    _phoneCtrl = TextEditingController(text: widget.company?.phone);
-    _emailCtrl = TextEditingController(text: widget.company?.email);
-    _linkedinCtrl = TextEditingController(text: widget.company?.linkedin);
-    _lastContacted = widget.company?.lastContacted;
-    _followUpDate = widget.company?.followUpDate;
+    final c = widget.company;
+    _nameCtrl = TextEditingController(text: c?.name);
+    _hrCtrl = TextEditingController(text: c?.hrName);
+    _hrDesignationCtrl = TextEditingController(text: c?.hrDesignation);
+    _phoneCtrl = TextEditingController(text: c?.phone);
+    _emailCtrl = TextEditingController(text: c?.email);
+    _linkedinCtrl = TextEditingController(text: c?.linkedin);
+    _roleCtrl = TextEditingController(text: c?.hiringRoles?.join(', '));
+    _lastContacted = c?.lastContactedDate;
+    _followUpDate = c?.followUpReminder;
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
+      backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text(widget.company == null ? 'Add Company' : 'Edit Company'),
+        title: Text(widget.company == null ? 'Add Company' : 'Edit Company', 
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF0F172A),
       ),
-      body: Padding(
-        padding: const EdgeInsets.all(16.0),
-        child: Form(
-          key: _formKey,
-          child: ListView(
-            children: [
-              _textField(_nameCtrl, 'Company Name'),
-              _textField(_hrCtrl, 'HR Name'),
-              _textField(_phoneCtrl, 'Phone', keyboard: TextInputType.phone),
-              _textField(_emailCtrl, 'Email', keyboard: TextInputType.emailAddress),
-              _textField(_linkedinCtrl, 'LinkedIn URL'),
-              
-              const SizedBox(height: 12),
-              ListTile(
-                title: Text(_lastContacted == null 
-                  ? 'Select Last Contacted Date' 
-                  : 'Last Contactd: ${_formatDate(_lastContacted!)}'),
-                trailing: const Icon(Icons.calendar_today),
-                onTap: () async {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime(2020),
-                    lastDate: DateTime.now(),
-                  );
-                  if (date != null) setState(() => _lastContacted = date);
-                },
-              ),
-              
-              ListTile(
-                title: Text(_followUpDate == null 
-                  ? 'Select Follow Up Date' 
-                  : 'Follow Up: ${_formatDate(_followUpDate!)}'),
-                trailing: const Icon(Icons.calendar_today, color: Colors.blue),
-                onTap: () async {
-                  final date = await showDatePicker(
-                    context: context,
-                    initialDate: DateTime.now(),
-                    firstDate: DateTime.now(),
-                    lastDate: DateTime(2030),
-                  );
-                  if (date != null) setState(() => _followUpDate = date);
-                },
-              ),
-
-              const SizedBox(height: 24),
-              _isLoading
-                ? const Center(child: CircularProgressIndicator())
-                : ElevatedButton(
-                    onPressed: _saveCompany,
-                    style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 16)),
-                    child: const Text('Save Company'),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSectionTitle('Company Information'),
+                const SizedBox(height: 16),
+                _buildCard([
+                  _textField(_nameCtrl, 'Company Name', Icons.business),
+                  _textField(_roleCtrl, 'Hiring Roles (comma separated)', Icons.work_outline),
+                ]),
+                const SizedBox(height: 24),
+                _buildSectionTitle('HR Contact Details'),
+                const SizedBox(height: 16),
+                _buildCard([
+                  _textField(_hrCtrl, 'HR Manager Name', Icons.person_outline),
+                  _textField(_hrDesignationCtrl, 'HR Designation', Icons.badge_outlined),
+                  _textField(_emailCtrl, 'HR Email', Icons.email_outlined, keyboard: TextInputType.emailAddress),
+                  _textField(_phoneCtrl, 'HR Phone', Icons.phone_outlined, keyboard: TextInputType.phone),
+                  _textField(_linkedinCtrl, 'LinkedIn Profile URL', Icons.link_outlined),
+                ]),
+                const SizedBox(height: 24),
+                _buildSectionTitle('Relationship Tracking'),
+                const SizedBox(height: 16),
+                _buildCard([
+                  _buildDatePickerTile(
+                    'Last Contacted', 
+                    _lastContacted, 
+                    Icons.history, 
+                    () async {
+                      final d = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime(2020), lastDate: DateTime.now());
+                      if (d != null) setState(() => _lastContacted = d);
+                    }
                   ),
-            ],
+                  const Divider(),
+                  _buildDatePickerTile(
+                    'Follow-up Reminder', 
+                    _followUpDate, 
+                    Icons.notifications_active_outlined, 
+                    () async {
+                      final d = await showDatePicker(context: context, initialDate: DateTime.now().add(const Duration(days: 7)), firstDate: DateTime.now(), lastDate: DateTime(2030));
+                      if (d != null) setState(() => _followUpDate = d);
+                    },
+                    isPriority: true,
+                  ),
+                ]),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _saveCompany,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B82F6),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: _isLoading 
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text('Save Company Details', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                ),
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),
     );
   }
 
-  Widget _textField(TextEditingController c, String label, {TextInputType keyboard = TextInputType.text}) {
+  Widget _buildSectionTitle(String title) {
+    return Text(title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)));
+  }
+
+  Widget _buildCard(List<Widget> children) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+      ),
+      child: Column(children: children),
+    );
+  }
+
+  Widget _buildDatePickerTile(String label, DateTime? date, IconData icon, VoidCallback onTap, {bool isPriority = false}) {
+    return ListTile(
+      contentPadding: EdgeInsets.zero,
+      leading: Icon(icon, color: isPriority ? const Color(0xFFF59E0B) : const Color(0xFF64748B)),
+      title: Text(label, style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF64748B))),
+      subtitle: Text(
+        date == null ? 'Not set' : '${date.day}/${date.month}/${date.year}',
+        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+      ),
+      trailing: const Icon(Icons.calendar_month, color: Color(0xFF3B82F6)),
+      onTap: onTap,
+    );
+  }
+
+  Widget _textField(TextEditingController c, String label, IconData icon, {TextInputType keyboard = TextInputType.text}) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
@@ -112,13 +166,12 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
         validator: (v) => label == 'Company Name' && (v == null || v.isEmpty) ? 'Required' : null,
         decoration: InputDecoration(
           labelText: label,
-          border: const OutlineInputBorder(),
+          prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
+          border: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey[200]!)),
         ),
       ),
     );
   }
-  
-  String _formatDate(DateTime d) => "${d.day}/${d.month}/${d.year}";
 
   Future<void> _saveCompany() async {
     if (!_formKey.currentState!.validate()) return;
@@ -127,13 +180,15 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
     try {
       final newCompany = Company(
         id: widget.company?.id,
-        companyName: _nameCtrl.text,
+        name: _nameCtrl.text,
         hrName: _hrCtrl.text,
+        hrDesignation: _hrDesignationCtrl.text,
         phone: _phoneCtrl.text,
         email: _emailCtrl.text,
         linkedin: _linkedinCtrl.text,
-        lastContacted: _lastContacted,
-        followUpDate: _followUpDate,
+        hiringRoles: _roleCtrl.text.split(',').map((e) => e.trim()).where((e) => e.isNotEmpty).toList(),
+        lastContactedDate: _lastContacted,
+        followUpReminder: _followUpDate,
       );
 
       if (widget.company == null) {
@@ -143,14 +198,9 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
       }
 
       if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text('Company saved successfully')),
-      );
       Navigator.pop(context, true);
     } catch (e) {
-      if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-      }
+      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }

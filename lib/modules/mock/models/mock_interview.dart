@@ -43,8 +43,8 @@ class MockInterview {
       confidence: json['confidence_score'] ?? 0,
       bodyLanguage: json['body_language_score'] ?? 0,
       feedback: json['feedback'],
-      status: json['status'],
-      conductedAt: json['conducted_at'] != null ? DateTime.parse(json['conducted_at']) : null,
+      status: json['overall_status'] ?? 'ready',
+      conductedAt: json['created_at'] != null ? DateTime.parse(json['created_at']) : null,
       studentName: json['students'] != null ? json['students']['name'] : null,
     );
   }
@@ -59,7 +59,7 @@ class MockInterview {
       'confidence_score': confidence,
       'body_language_score': bodyLanguage,
       if (feedback != null) 'feedback': feedback,
-      'status': status,
+      'overall_status': status,
     };
   }
 }

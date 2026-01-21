@@ -1,4 +1,5 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:placement_tracker/core/services/mock_service.dart';
 import 'package:placement_tracker/core/services/student_service.dart';
 import 'package:placement_tracker/modules/mock/models/mock_interview.dart';
@@ -19,7 +20,6 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
   String? _selectedStudent;
   String _type = 'hr';
   
-  // Scores
   double _communication = 5;
   double _technical = 5;
   double _confidence = 5;
@@ -43,61 +43,105 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('New Mock Interview')),
-      body: Padding(
-        padding: const EdgeInsets.all(16),
-        child: ListView(
-          children: [
-            DropdownButtonFormField<String>(
-              value: _selectedStudent,
-              hint: const Text('Select Student'),
-              items: _students.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))).toList(),
-              onChanged: (v) => setState(() => _selectedStudent = v),
-              decoration: const InputDecoration(labelText: 'Student'),
-            ),
-            const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: _type,
-              items: ['hr', 'technical', 'managerial']
-                  .map((t) => DropdownMenuItem(value: t, child: Text(t.toUpperCase())))
-                  .toList(),
-              onChanged: (v) => setState(() => _type = v!),
-              decoration: const InputDecoration(labelText: 'Interview Type'),
-            ),
-            
-            const SizedBox(height: 20),
-            const Text('Scores (1-10)', style: TextStyle(fontWeight: FontWeight.bold)),
-            _scoreSlider('Communication', _communication, (v) => setState(() => _communication = v)),
-            _scoreSlider('Technical', _technical, (v) => setState(() => _technical = v)),
-            _scoreSlider('Confidence', _confidence, (v) => setState(() => _confidence = v)),
-            _scoreSlider('Body Language', _bodyLanguage, (v) => setState(() => _bodyLanguage = v)),
-
-            TextField(
-              controller: _feedbackCtrl,
-              maxLines: 3,
-              decoration: const InputDecoration(labelText: 'Feedback & Comments'),
-            ),
-             const SizedBox(height: 12),
-            DropdownButtonFormField<String>(
-              value: _status,
-              items: const [
-                DropdownMenuItem(value: 'ready', child: Text('✅ Ready')),
-                DropdownMenuItem(value: 'needs_improvement', child: Text('⚠ Needs Improvement')),
-                DropdownMenuItem(value: 'not_ready', child: Text('❌ Not Ready')),
-              ],
-              onChanged: (v) => setState(() => _status = v!),
-              decoration: const InputDecoration(labelText: 'Final Verdict'),
-            ),
-
-            const SizedBox(height: 24),
-            _isLoading 
-              ? const Center(child: CircularProgressIndicator())
-              : ElevatedButton(
-                  onPressed: _save,
-                  child: const Text('Save Interview'),
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: Text('Record Interview', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF0F172A),
+      ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              _buildSelectionCard(),
+              const SizedBox(height: 24),
+              Text('Performance Scores', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              _buildScoreCard(),
+              const SizedBox(height: 24),
+              Text('Conclusion', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+              const SizedBox(height: 16),
+              _buildConclusionCard(),
+              const SizedBox(height: 32),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  onPressed: _isLoading ? null : _save,
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: const Color(0xFF3B82F6),
+                    padding: const EdgeInsets.symmetric(vertical: 18),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                  ),
+                  child: _isLoading 
+                    ? const CircularProgressIndicator(color: Colors.white)
+                    : Text('Save Interview Results', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
                 ),
-          ],
+              ),
+              const SizedBox(height: 40),
+            ],
+          ),
         ),
+      ),
+    );
+  }
+
+  Widget _buildSelectionCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+      ),
+      child: Column(
+        children: [
+          DropdownButtonFormField<String>(
+            value: _selectedStudent,
+            hint: Text('Select Student', style: GoogleFonts.inter()),
+            items: _students.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))).toList(),
+            onChanged: (v) => setState(() => _selectedStudent = v),
+            decoration: InputDecoration(
+              labelText: 'Student',
+              prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF3B82F6)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            value: _type,
+            items: ['hr', 'technical', 'managerial']
+                .map((t) => DropdownMenuItem(value: t, child: Text(t.toUpperCase(), style: GoogleFonts.inter())))
+                .toList(),
+            onChanged: (v) => setState(() => _type = v!),
+            decoration: InputDecoration(
+              labelText: 'Interview Type',
+              prefixIcon: const Icon(Icons.category_outlined, color: Color(0xFF3B82F6)),
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildScoreCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+      ),
+      child: Column(
+        children: [
+          _scoreSlider('Communication', _communication, (v) => setState(() => _communication = v)),
+          _scoreSlider('Technical', _technical, (v) => setState(() => _technical = v)),
+          _scoreSlider('Confidence', _confidence, (v) => setState(() => _confidence = v)),
+          _scoreSlider('Body Language', _bodyLanguage, (v) => setState(() => _bodyLanguage = v)),
+        ],
       ),
     );
   }
@@ -109,8 +153,8 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label),
-            Text(val.toInt().toString(), style: const TextStyle(fontWeight: FontWeight.bold)),
+            Text(label, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+            Text(val.toInt().toString(), style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFF3B82F6))),
           ],
         ),
         Slider(
@@ -118,9 +162,49 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
           min: 1,
           max: 10,
           divisions: 9,
+          activeColor: const Color(0xFF3B82F6),
           onChanged: onChanged,
         ),
+        const SizedBox(height: 8),
       ],
+    );
+  }
+
+  Widget _buildConclusionCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+      ),
+      child: Column(
+        children: [
+          TextField(
+            controller: _feedbackCtrl,
+            maxLines: 3,
+            decoration: InputDecoration(
+              hintText: 'Detailed feedback...',
+              labelText: 'Feedback & Comments',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+          const SizedBox(height: 16),
+          DropdownButtonFormField<String>(
+            value: _status,
+            items: const [
+              DropdownMenuItem(value: 'ready', child: Text('✅ Ready')),
+              DropdownMenuItem(value: 'needs_improvement', child: Text('⚠ Needs Improvement')),
+              DropdownMenuItem(value: 'not_ready', child: Text('❌ Not Ready')),
+            ],
+            onChanged: (v) => setState(() => _status = v!),
+            decoration: InputDecoration(
+              labelText: 'Final Verdict',
+              border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+            ),
+          ),
+        ],
+      ),
     );
   }
 
@@ -162,49 +246,34 @@ class _MockInterviewListPageState extends State<MockInterviewListPage> {
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      appBar: AppBar(title: const Text('Mock Interviews')),
-      floatingActionButton: FloatingActionButton(
+      backgroundColor: const Color(0xFFF8FAFC),
+      appBar: AppBar(
+        title: Text('Mock Interviews', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        elevation: 0,
+        backgroundColor: Colors.white,
+        foregroundColor: const Color(0xFF0F172A),
+      ),
+      floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddMockInterviewPage()));
-          setState(() {});
+          final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddMockInterviewPage()));
+          if (result == true) setState(() {});
         },
-        child: const Icon(Icons.add),
+        backgroundColor: const Color(0xFF3B82F6),
+        label: Text('Record Interview', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        icon: const Icon(Icons.add),
       ),
       body: FutureBuilder<List<MockInterview>>(
         future: _service.getInterviews(),
         builder: (context, snapshot) {
           if (snapshot.connectionState == ConnectionState.waiting) return const Center(child: CircularProgressIndicator());
-          if (!snapshot.hasData || snapshot.data!.isEmpty) return const Center(child: Text('No Interviews Recorded'));
+          if (!snapshot.hasData || snapshot.data!.isEmpty) return _buildEmptyState();
 
           return ListView.builder(
+            padding: const EdgeInsets.all(16),
             itemCount: snapshot.data!.length,
             itemBuilder: (context, index) {
               final interview = snapshot.data![index];
-              return Card(
-                child: ExpansionTile(
-                  leading: CircleAvatar(
-                    backgroundColor: _getStatusColor(interview.status),
-                    child: Icon(_getTypeIcon(interview.interviewType), color: Colors.white, size: 18),
-                  ),
-                  title: Text(interview.studentName ?? 'Unknown'),
-                  subtitle: Text('${interview.interviewType.toUpperCase()} • ${interview.status.replaceAll('_', ' ')}'),
-                  children: [
-                    Padding(
-                      padding: const EdgeInsets.all(16.0),
-                      child: Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          _scoreRow('Communication', interview.communication),
-                          _scoreRow('Technical', interview.technical),
-                          _scoreRow('Confidence', interview.confidence),
-                          const Divider(),
-                          Text('Feedback: ${interview.feedback ?? "None"}'),
-                        ],
-                      ),
-                    ),
-                  ],
-                ),
-              );
+              return _buildInterviewCard(interview);
             },
           );
         },
@@ -212,28 +281,115 @@ class _MockInterviewListPageState extends State<MockInterviewListPage> {
     );
   }
 
-  Widget _scoreRow(String label, int score) {
-    return Padding(
-      padding: const EdgeInsets.symmetric(vertical: 4),
-      child: Row(
-        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+  Widget _buildInterviewCard(MockInterview interview) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 16),
+      decoration: BoxDecoration(
+        color: Colors.white,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: const Color(0xFFE2E8F0)),
+      ),
+      child: ExpansionTile(
+        tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+        leading: Container(
+          width: 48,
+          height: 48,
+          decoration: BoxDecoration(
+            color: _getStatusColor(interview.status).withValues(alpha: 0.1),
+            borderRadius: BorderRadius.circular(12),
+          ),
+          child: Icon(_getTypeIcon(interview.interviewType), color: _getStatusColor(interview.status)),
+        ),
+        title: Text(
+          interview.studentName ?? 'Unknown Student',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16),
+        ),
+        subtitle: Text(
+          '${interview.interviewType.toUpperCase()} • ${_formatDate(interview.conductedAt)}',
+          style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
+        ),
+        trailing: _buildStatusBadge(interview.status),
         children: [
-          Text(label),
-          Text('$score/10', style: TextStyle(fontWeight: FontWeight.bold, color: score < 5 ? Colors.red : Colors.green)),
+          Padding(
+            padding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                const Divider(),
+                const SizedBox(height: 8),
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceAround,
+                  children: [
+                    _buildMiniScore('Comm', interview.communication),
+                    _buildMiniScore('Tech', interview.technical),
+                    _buildMiniScore('Conf', interview.confidence),
+                    _buildMiniScore('Body', interview.bodyLanguage),
+                  ],
+                ),
+                const SizedBox(height: 16),
+                Text('Feedback', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13)),
+                const SizedBox(height: 4),
+                Text(
+                  interview.feedback ?? "No feedback provided.",
+                  style: GoogleFonts.inter(color: const Color(0xFF334155), fontSize: 14),
+                ),
+              ],
+            ),
+          ),
         ],
       ),
     );
   }
 
+  Widget _buildMiniScore(String label, int score) {
+    return Column(
+      children: [
+        Text(score.toString(), style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF3B82F6))),
+        Text(label, style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF94A3B8))),
+      ],
+    );
+  }
+
+  Widget _buildStatusBadge(String status) {
+    Color color = _getStatusColor(status);
+    String label = status.replaceAll('_', ' ').toUpperCase();
+    return Container(
+      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+      decoration: BoxDecoration(
+        color: color.withValues(alpha: 0.1),
+        borderRadius: BorderRadius.circular(6),
+      ),
+      child: Text(label, style: GoogleFonts.inter(fontSize: 10, fontWeight: FontWeight.bold, color: color)),
+    );
+  }
+
   Color _getStatusColor(String status) {
-    if (status == 'ready') return Colors.green;
-    if (status == 'needs_improvement') return Colors.orange;
-    return Colors.red;
+    if (status == 'ready') return const Color(0xFF10B981);
+    if (status == 'needs_improvement') return const Color(0xFFF59E0B);
+    return const Color(0xFFEF4444);
   }
 
   IconData _getTypeIcon(String type) {
-    if (type == 'technical') return Icons.computer;
-    if (type == 'hr') return Icons.people;
-    return Icons.manage_accounts;
+    if (type == 'technical') return Icons.computer_outlined;
+    if (type == 'hr') return Icons.people_outline;
+    return Icons.manage_accounts_outlined;
+  }
+
+  String _formatDate(DateTime? date) {
+    if (date == null) return 'N/A';
+    return '${date.day}/${date.month}/${date.year}';
+  }
+
+  Widget _buildEmptyState() {
+     return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.mic_off_outlined, size: 64, color: Colors.grey[300]),
+          const SizedBox(height: 16),
+          Text('No interviews recorded yet', style: GoogleFonts.outfit(fontSize: 18, color: Colors.grey[600])),
+        ],
+      ),
+    );
   }
 }

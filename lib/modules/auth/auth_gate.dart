@@ -4,6 +4,7 @@ import '../../core/services/auth_service.dart';
 import '../admin/admin_home.dart';
 import '../student/student_home.dart';
 import '../trainer/trainer_home.dart';
+import '../company/views/company_home.dart';
 import 'login_page.dart';
 
 class AuthGate extends StatelessWidget {
