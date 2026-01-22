@@ -56,63 +56,73 @@ class _StudentListPageState extends State<StudentListPage> {
     });
   }
 
+
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text('Student Directory', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
-        actions: [
-          _buildFilterChip(),
-          const SizedBox(width: 8),
-        ],
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
-      floatingActionButton: FloatingActionButton.extended(
-        onPressed: () async {
-          final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddStudentPage()));
-          if (result == true) _loadStudents();
-        },
-        backgroundColor: const Color(0xFF3B82F6),
-        label: Text('Add Student', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        icon: const Icon(Icons.add),
-      ),
-      body: Center(
-        child: ConstrainedBox(
-          constraints: const BoxConstraints(maxWidth: 1200),
-          child: Column(
-            children: [
-              _buildSearchBar(),
-              Expanded(
-                child: _isLoading
-                    ? const Center(child: CircularProgressIndicator())
-                    : _filteredStudents.isEmpty
-                        ? _buildEmptyState()
-                        : Padding(
-                            padding: const EdgeInsets.symmetric(horizontal: 16),
-                            child: CustomScrollView(
-                              slivers: [
-                                const SliverToBoxAdapter(child: SizedBox(height: 16)),
-                                SliverGrid(
-                                  gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
-                                    crossAxisCount: context.responsive(1, tablet: 2, desktop: 3),
-                                    crossAxisSpacing: 16,
-                                    mainAxisSpacing: 16,
-                                    childAspectRatio: context.responsive(2.8, tablet: 2.2, desktop: 2.0),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text('Student Directory', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          actions: [
+            _buildFilterChip(),
+            const SizedBox(width: 8),
+          ],
+        ),
+        floatingActionButton: FloatingActionButton.extended(
+          onPressed: () async {
+            final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddStudentPage()));
+            if (result == true) _loadStudents();
+          },
+          backgroundColor: const Color(0xFF3B82F6),
+          label: Text('Add Student', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          icon: const Icon(Icons.add),
+        ),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: Column(
+              children: [
+                _buildSearchBar(),
+                Expanded(
+                  child: _isLoading
+                      ? const Center(child: CircularProgressIndicator())
+                      : _filteredStudents.isEmpty
+                          ? _buildEmptyState()
+                          : Padding(
+                              padding: const EdgeInsets.symmetric(horizontal: 16),
+                              child: CustomScrollView(
+                                slivers: [
+                                  const SliverToBoxAdapter(child: SizedBox(height: 16)),
+                                  SliverGrid(
+                                    gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                                      crossAxisCount: context.responsive(1, tablet: 2, desktop: 3),
+                                      crossAxisSpacing: 16,
+                                      mainAxisSpacing: 16,
+                                      childAspectRatio: context.responsive(2.8, tablet: 2.2, desktop: 2.0),
+                                    ),
+                                    delegate: SliverChildBuilderDelegate(
+                                      (context, index) => _buildStudentCard(_filteredStudents[index]),
+                                      childCount: _filteredStudents.length,
+                                    ),
                                   ),
-                                  delegate: SliverChildBuilderDelegate(
-                                    (context, index) => _buildStudentCard(_filteredStudents[index]),
-                                    childCount: _filteredStudents.length,
-                                  ),
-                                ),
-                                const SliverToBoxAdapter(child: SizedBox(height: 40)),
-                              ],
+                                  const SliverToBoxAdapter(child: SizedBox(height: 40)),
+                                ],
+                              ),
                             ),
-                          ),
-              ),
-            ],
+                ),
+              ],
+            ),
           ),
         ),
       ),
@@ -122,7 +132,10 @@ class _StudentListPageState extends State<StudentListPage> {
   Widget _buildSearchBar() {
     return Container(
       padding: const EdgeInsets.all(16),
-      color: Colors.white,
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        border: Border(bottom: BorderSide(color: Colors.white.withValues(alpha: 0.1))),
+      ),
       child: TextField(
         onChanged: (v) {
           _searchQuery = v;
@@ -130,13 +143,13 @@ class _StudentListPageState extends State<StudentListPage> {
         },
         decoration: InputDecoration(
           hintText: 'Search by name, course, or college...',
-          hintStyle: GoogleFonts.inter(color: const Color(0xFF94A3B8)),
+          hintStyle: GoogleFonts.inter(color: Colors.white60),
           prefixIcon: const Icon(Icons.search, color: Color(0xFF3B82F6)),
           filled: true,
-          fillColor: const Color(0xFFF1F5F9),
+          fillColor: Colors.white.withValues(alpha: 0.05),
           border: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
           ),
           contentPadding: const EdgeInsets.symmetric(vertical: 0),
         ),
@@ -163,9 +176,9 @@ class _StudentListPageState extends State<StudentListPage> {
   Widget _buildStudentCard(Student student) {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Material(
         color: Colors.transparent,
@@ -194,7 +207,7 @@ class _StudentListPageState extends State<StudentListPage> {
                         style: GoogleFonts.outfit(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
-                          color: const Color(0xFF0F172A),
+                          color: Colors.white,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -204,7 +217,7 @@ class _StudentListPageState extends State<StudentListPage> {
                         '${student.primaryCourse ?? "No Course"} • ${student.batch ?? "No Batch"}',
                         style: GoogleFonts.inter(
                           fontSize: 13,
-                          color: const Color(0xFF64748B),
+                          color: Colors.white70,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,
@@ -214,7 +227,7 @@ class _StudentListPageState extends State<StudentListPage> {
                         student.collegeName ?? "Institution Unknown",
                         style: GoogleFonts.inter(
                           fontSize: 12,
-                          color: const Color(0xFF94A3B8),
+                          color: Colors.white60,
                         ),
                         maxLines: 1,
                         overflow: TextOverflow.ellipsis,

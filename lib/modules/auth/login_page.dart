@@ -40,7 +40,7 @@ class _LoginPageState extends State<LoginPage> {
           Container(
             decoration: const BoxDecoration(
               gradient: LinearGradient(
-                colors: [Color(0xFF0F172A), Color(0xFF1E3A8A), Color(0xFF172554)],
+                colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
                 begin: Alignment.topLeft,
                 end: Alignment.bottomRight,
               ),
@@ -95,7 +95,7 @@ class _LoginPageState extends State<LoginPage> {
                                     ),
                                   ],
                                 ),
-                                child: const Icon(Icons.school_rounded, color: Color(0xFF1E3A8A), size: 40),
+                                child: const Icon(Icons.school_rounded, color: Color(0xFF3B82F6), size: 40),
                               ),
                               const SizedBox(height: 24),
                               Text(
@@ -146,13 +146,13 @@ class _LoginPageState extends State<LoginPage> {
                                   onPressed: loading ? null : _handleAuth,
                                   style: ElevatedButton.styleFrom(
                                     backgroundColor: Colors.white,
-                                    foregroundColor: const Color(0xFF1E3A8A),
+                                    foregroundColor: const Color(0xFF0F172A),
                                     padding: const EdgeInsets.symmetric(vertical: 16),
                                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
                                     elevation: 0,
                                   ),
                                   child: loading
-                                      ? const CircularProgressIndicator(color: Color(0xFF1E3A8A))
+                                      ? const CircularProgressIndicator(color: Color(0xFF0F172A))
                                       : Text(
                                           _isSignUp ? 'Create Account' : 'Sign In',
                                           style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold),
@@ -209,7 +209,7 @@ class _LoginPageState extends State<LoginPage> {
           child: DropdownButtonHideUnderline(
             child: DropdownButton<String>(
               value: _selectedRole,
-              dropdownColor: const Color(0xFF1E3A8A),
+              dropdownColor: const Color(0xFF1E293B),
               icon: const Icon(Icons.arrow_drop_down, color: Colors.white70),
               isExpanded: true,
               style: GoogleFonts.inter(color: Colors.white),

@@ -43,14 +43,22 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text('Record Interview', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text('Record Interview', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+        ),
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20),
@@ -59,11 +67,11 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
             children: [
               _buildSelectionCard(),
               const SizedBox(height: 24),
-              Text('Performance Scores', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('Performance Scores', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
               const SizedBox(height: 16),
               _buildScoreCard(),
               const SizedBox(height: 24),
-              Text('Conclusion', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold)),
+              Text('Conclusion', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
               const SizedBox(height: 16),
               _buildConclusionCard(),
               const SizedBox(height: 32),
@@ -86,6 +94,7 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
           ),
         ),
       ),
+      ),
     );
   }
 
@@ -93,9 +102,9 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
@@ -132,9 +141,9 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
@@ -154,7 +163,7 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Text(label, style: GoogleFonts.inter(fontWeight: FontWeight.w500)),
+            Text(label, style: GoogleFonts.inter(fontWeight: FontWeight.w500, color: Colors.white70)),
             Text(val.toInt().toString(), style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFF3B82F6))),
           ],
         ),
@@ -175,9 +184,9 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(
         children: [
@@ -300,14 +309,22 @@ class _MockInterviewListPageState extends State<MockInterviewListPage> {
   Widget build(BuildContext context) {
     final isAdmin = _userRole == 'admin' || _userRole == 'trainer';
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text('Mock Interviews', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text('Mock Interviews', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+        ),
       floatingActionButton: isAdmin ? FloatingActionButton.extended(
         onPressed: () async {
           final result = await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddMockInterviewPage()));
@@ -332,6 +349,7 @@ class _MockInterviewListPageState extends State<MockInterviewListPage> {
                     },
                   ),
                 ),
+      ),
     );
   }
 
@@ -339,9 +357,9 @@ class _MockInterviewListPageState extends State<MockInterviewListPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: ExpansionTile(
         tilePadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
@@ -356,11 +374,11 @@ class _MockInterviewListPageState extends State<MockInterviewListPage> {
         ),
         title: Text(
           interview.studentName ?? 'Student',
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16),
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white),
         ),
         subtitle: Text(
           '${interview.interviewType.toUpperCase()} • ${_formatDate(interview.conductedAt)}',
-          style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B)),
+          style: GoogleFonts.inter(fontSize: 13, color: Colors.white70),
         ),
         trailing: _buildStatusBadge(interview.status),
         children: [
@@ -381,11 +399,11 @@ class _MockInterviewListPageState extends State<MockInterviewListPage> {
                   ],
                 ),
                 const SizedBox(height: 16),
-                Text('Feedback', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13)),
+                Text('Feedback', style: GoogleFonts.inter(fontWeight: FontWeight.bold, fontSize: 13, color: Colors.white)),
                 const SizedBox(height: 4),
                 Text(
                   interview.feedback ?? "No feedback provided.",
-                  style: GoogleFonts.inter(color: const Color(0xFF334155), fontSize: 14),
+                  style: GoogleFonts.inter(color: Colors.white70, fontSize: 14),
                 ),
               ],
             ),
@@ -399,7 +417,7 @@ class _MockInterviewListPageState extends State<MockInterviewListPage> {
     return Column(
       children: [
         Text(score.toString(), style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF3B82F6))),
-        Text(label, style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF94A3B8))),
+        Text(label, style: GoogleFonts.inter(fontSize: 10, color: Colors.white60)),
       ],
     );
   }
@@ -441,7 +459,7 @@ class _MockInterviewListPageState extends State<MockInterviewListPage> {
         children: [
           Icon(Icons.mic_off_outlined, size: 64, color: Colors.grey[300]),
           const SizedBox(height: 16),
-          Text('No interviews recorded yet', style: GoogleFonts.outfit(fontSize: 18, color: Colors.grey[600])),
+          Text('No interviews recorded yet', style: GoogleFonts.outfit(fontSize: 18, color: Colors.white60)),
         ],
       ),
     );

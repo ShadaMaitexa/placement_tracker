@@ -73,14 +73,22 @@ class _AptitudeResultListPageState extends State<AptitudeResultListPage> {
   Widget build(BuildContext context) {
     final isAdmin = _userRole == 'admin' || _userRole == 'trainer';
 
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text('Aptitude Results', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text('Aptitude Results', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+        ),
       floatingActionButton: isAdmin ? FloatingActionButton.extended(
         onPressed: () async {
           final res = await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddResultPage()));
@@ -122,7 +130,9 @@ class _AptitudeResultListPageState extends State<AptitudeResultListPage> {
                       ),
                     ),
                   ),
+                  ),
                 ),
+      ),
     );
   }
 
@@ -132,9 +142,9 @@ class _AptitudeResultListPageState extends State<AptitudeResultListPage> {
 
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Center(
         child: ListTile(
@@ -149,13 +159,13 @@ class _AptitudeResultListPageState extends State<AptitudeResultListPage> {
             alignment: Alignment.center,
             child: Text('$percentage%', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 13, color: color)),
           ),
-          title: Text(res.testTitle ?? 'General Aptitude', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15), maxLines: 1, overflow: TextOverflow.ellipsis),
+          title: Text(res.testTitle ?? 'General Aptitude', style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 15, color: Colors.white), maxLines: 1, overflow: TextOverflow.ellipsis),
           subtitle: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             mainAxisSize: MainAxisSize.min,
             children: [
               if (_userRole != 'student') Text(res.studentName ?? 'Student', style: GoogleFonts.inter(fontSize: 12, color: const Color(0xFF3B82F6)), maxLines: 1, overflow: TextOverflow.ellipsis),
-              Text('Score: ${res.score}/${res.maxScore} • Time: ${res.timeTakenMinutes}m', style: GoogleFonts.inter(fontSize: 11, color: const Color(0xFF64748B))),
+              Text('Score: ${res.score}/${res.maxScore} • Time: ${res.timeTakenMinutes}m', style: GoogleFonts.inter(fontSize: 11, color: Colors.white70)),
             ],
           ),
         ),
@@ -170,7 +180,7 @@ class _AptitudeResultListPageState extends State<AptitudeResultListPage> {
         children: [
           Icon(Icons.assignment_turned_in_outlined, size: 64, color: Colors.grey[300]),
           const SizedBox(height: 16),
-          Text('No results found', style: GoogleFonts.outfit(fontSize: 18, color: Colors.grey[600])),
+          Text('No results found', style: GoogleFonts.outfit(fontSize: 18, color: Colors.white60)),
         ],
       ),
     );
@@ -214,14 +224,22 @@ class _AddResultPageState extends State<AddResultPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text('Record Result', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text('Record Result', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+        ),
       body: Center(
         child: ConstrainedBox(
           constraints: const BoxConstraints(maxWidth: 600),
@@ -233,9 +251,9 @@ class _AddResultPageState extends State<AddResultPage> {
                   Container(
                     padding: const EdgeInsets.all(16),
                     decoration: BoxDecoration(
-                      color: Colors.white,
+                      color: Colors.white.withValues(alpha: 0.05),
                       borderRadius: BorderRadius.circular(16),
-                      boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+                      border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                     ),
                     child: Column(
                       children: [
@@ -301,6 +319,7 @@ class _AddResultPageState extends State<AddResultPage> {
             ),
           ),
         ),
+      ),
       ),
     );
   }

@@ -42,17 +42,25 @@ class _CompanyListPageState extends State<CompanyListPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text(
-          'Company Database',
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
         ),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
       ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(
+            'Company Database',
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+          ),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+        ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
           final res = await Navigator.push(
@@ -80,6 +88,7 @@ class _CompanyListPageState extends State<CompanyListPage> {
                 return _buildCompanyCard(company);
               },
             ),
+      ),
     );
   }
 
@@ -87,9 +96,9 @@ class _CompanyListPageState extends State<CompanyListPage> {
     return Container(
       margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: ListTile(
         contentPadding: const EdgeInsets.all(16),
@@ -112,7 +121,7 @@ class _CompanyListPageState extends State<CompanyListPage> {
         ),
         title: Text(
           company.name,
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18),
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
         ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
@@ -122,7 +131,7 @@ class _CompanyListPageState extends State<CompanyListPage> {
               '${company.hrName ?? "No HR Contact"} • ${company.hrDesignation ?? "Company"}',
               style: GoogleFonts.inter(
                 fontSize: 13,
-                color: const Color(0xFF64748B),
+                color: Colors.white70,
               ),
             ),
             const SizedBox(height: 8),
@@ -175,7 +184,7 @@ class _CompanyListPageState extends State<CompanyListPage> {
           const SizedBox(height: 16),
           Text(
             'No companies registered',
-            style: GoogleFonts.outfit(fontSize: 18, color: Colors.grey[600]),
+            style: GoogleFonts.outfit(fontSize: 18, color: Colors.white60),
           ),
         ],
       ),

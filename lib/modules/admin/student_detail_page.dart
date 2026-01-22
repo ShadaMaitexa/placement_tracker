@@ -51,8 +51,16 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
       body: CustomScrollView(
         slivers: [
           _buildAppBar(context),
@@ -100,6 +108,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
           ),
         ],
       ),
+      ),
     );
   }
 
@@ -112,7 +121,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
         background: Container(
           decoration: const BoxDecoration(
             gradient: LinearGradient(
-              colors: [Color(0xFF0F172A), Color(0xFF1E3A8A)],
+              colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
               begin: Alignment.topLeft,
               end: Alignment.bottomRight,
             ),
@@ -160,8 +169,12 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     if (_applications.isEmpty) {
       return Container(
         padding: const EdgeInsets.all(20),
-        decoration: BoxDecoration(color: Colors.white, borderRadius: BorderRadius.circular(16)),
-        child: Center(child: Text('No applications found', style: GoogleFonts.inter(color: Colors.grey))),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+        ),
+        child: Center(child: Text('No applications found', style: GoogleFonts.inter(color: Colors.white60))),
       );
     }
 
@@ -174,13 +187,13 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
         return Container(
           margin: const EdgeInsets.only(bottom: 12),
           decoration: BoxDecoration(
-            color: Colors.white,
+            color: Colors.white.withValues(alpha: 0.05),
             borderRadius: BorderRadius.circular(16),
-            border: Border.all(color: const Color(0xFFE2E8F0)),
+            border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
           ),
           child: ListTile(
-            title: Text(drive['job_role'], style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-            subtitle: Text(company['name'], style: GoogleFonts.inter(fontSize: 13)),
+            title: Text(drive['job_role'], style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white)),
+            subtitle: Text(company['name'], style: GoogleFonts.inter(fontSize: 13, color: Colors.white70)),
             trailing: PopupMenuButton<String>(
               child: _buildStatusTag(status),
               onSelected: (val) => _updateStatus(app['id'], val),
@@ -254,9 +267,9 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
       child: Container(
         padding: const EdgeInsets.all(16),
         decoration: BoxDecoration(
-          color: Colors.white,
+          color: Colors.white.withValues(alpha: 0.05),
           borderRadius: BorderRadius.circular(16),
-          boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+          border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
         ),
         child: Row(
           children: [
@@ -278,7 +291,7 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
   Widget _buildSectionTitle(String title) {
     return Padding(
       padding: const EdgeInsets.only(left: 4, bottom: 12),
-      child: Text(title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF334155))),
+      child: Text(title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
     );
   }
 
@@ -299,16 +312,16 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
       padding: const EdgeInsets.symmetric(vertical: 8),
       child: Row(
         children: [
-          Icon(icon, size: 18, color: const Color(0xFF64748B)),
+          Icon(icon, size: 18, color: const Color(0xFF3B82F6)),
           const SizedBox(width: 12),
-          Text(label, style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF64748B))),
+          Text(label, style: GoogleFonts.inter(fontSize: 14, color: Colors.white70)),
           const Spacer(),
           Text(
             value,
             style: GoogleFonts.inter(
               fontSize: 14, 
               fontWeight: FontWeight.w600, 
-              color: isLink ? const Color(0xFF3B82F6) : const Color(0xFF0F172A)
+              color: isLink ? const Color(0xFF3B82F6) : Colors.white
             ),
           ),
         ],
@@ -322,12 +335,12 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
       width: double.infinity,
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: skills.isEmpty 
-        ? Text('No skills listed', style: GoogleFonts.inter(color: Colors.grey))
+        ? Text('No skills listed', style: GoogleFonts.inter(color: Colors.white60))
         : Wrap(
             spacing: 8,
             runSpacing: 8,

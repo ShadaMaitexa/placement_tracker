@@ -21,14 +21,22 @@ class _AddTestPageState extends State<AddTestPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text('New Aptitude Test', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text('New Aptitude Test', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+        ),
       body: Padding(
         padding: const EdgeInsets.all(20),
         child: Column(
@@ -36,9 +44,9 @@ class _AddTestPageState extends State<AddTestPage> {
             Container(
               padding: const EdgeInsets.all(20),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
-                boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Column(
                 children: [
@@ -93,6 +101,7 @@ class _AddTestPageState extends State<AddTestPage> {
           ],
         ),
       ),
+      ),
     );
   }
 
@@ -134,17 +143,25 @@ class _AptitudeTestListPageState extends State<AptitudeTestListPage> with Single
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text('Aptitude Module', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text('Aptitude Module', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
         bottom: TabBar(
           controller: _tabController,
-          labelColor: const Color(0xFF3B82F6),
-          unselectedLabelColor: const Color(0xFF64748B),
+          labelColor: Colors.white,
+          unselectedLabelColor: Colors.white60,
           indicatorColor: const Color(0xFF3B82F6),
           indicatorWeight: 3,
           tabs: const [
@@ -174,6 +191,7 @@ class _AptitudeTestListPageState extends State<AptitudeTestListPage> with Single
         label: Text(_tabController.index == 0 ? 'Create Test' : 'Record Score', 
           style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
         icon: const Icon(Icons.add),
+      ),
       ),
     );
   }
@@ -205,9 +223,9 @@ class __TestListState extends State<_TestList> {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Row(
                 children: [
@@ -225,9 +243,9 @@ class __TestListState extends State<_TestList> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(test.title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16)),
+                        Text(test.title, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 16, color: Colors.white)),
                         Text('${test.type.toUpperCase()} • Max: ${test.totalMarks}', 
-                          style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B))),
+                          style: GoogleFonts.inter(fontSize: 13, color: Colors.white70)),
                       ],
                     ),
                   ),
@@ -258,7 +276,7 @@ class __TestListState extends State<_TestList> {
   }
 
   Widget _buildEmptyState(String msg) {
-    return Center(child: Text(msg, style: GoogleFonts.inter(color: Colors.grey)));
+    return Center(child: Text(msg, style: GoogleFonts.inter(color: Colors.white60)));
   }
 }
 
@@ -283,9 +301,9 @@ class _ResultList extends StatelessWidget {
               margin: const EdgeInsets.only(bottom: 12),
               padding: const EdgeInsets.all(16),
               decoration: BoxDecoration(
-                color: Colors.white,
+                color: Colors.white.withValues(alpha: 0.05),
                 borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: const Color(0xFFE2E8F0)),
+                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
               ),
               child: Column(
                 children: [
@@ -297,8 +315,8 @@ class _ResultList extends StatelessWidget {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Text(res.studentName ?? 'Unknown', style: GoogleFonts.inter(fontWeight: FontWeight.bold)),
-                            Text(res.testTitle ?? 'Test', style: GoogleFonts.inter(fontSize: 12, color: Colors.grey)),
+                            Text(res.studentName ?? 'Unknown', style: GoogleFonts.inter(fontWeight: FontWeight.bold, color: Colors.white)),
+                            Text(res.testTitle ?? 'Test', style: GoogleFonts.inter(fontSize: 12, color: Colors.white60)),
                           ],
                         ),
                       ),
@@ -327,8 +345,8 @@ class _ResultList extends StatelessWidget {
   Widget _miniInfo(String label, String val) {
     return Column(
       children: [
-        Text(val, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: const Color(0xFF0F172A))),
-        Text(label, style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF64748B))),
+        Text(val, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, color: Colors.white)),
+        Text(label, style: GoogleFonts.inter(fontSize: 10, color: Colors.white70)),
       ],
     );
   }
@@ -372,10 +390,22 @@ class _AddResultPageState extends State<AddResultPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(title: const Text('Record Aptitude Score')),
-      body: Padding(
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text('Record Aptitude Score', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+        ),
+        body: Padding(
         padding: const EdgeInsets.all(20),
         child: ListView(
           children: [
@@ -412,6 +442,7 @@ class _AddResultPageState extends State<AddResultPage> {
             )
           ],
         ),
+      ),
       ),
     );
   }
