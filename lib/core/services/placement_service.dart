@@ -5,7 +5,7 @@ import 'supabase_service.dart';
 class PlacementDriveService {
   final _client = SupabaseService.client;
 
-  Future<List<PlacementDrive>> getDrives() async {
+  Future<List<PlacementDrive>> getAllPlacementDrives() async {
     try {
       final response = await _client
           .from('placement_drives')
@@ -19,7 +19,7 @@ class PlacementDriveService {
     }
   }
 
-  Future<void> addDrive(PlacementDrive drive) async {
+  Future<void> addPlacementDrive(PlacementDrive drive) async {
     try {
       await _client.from('placement_drives').insert(drive.toJson());
     } catch (e) {
@@ -30,7 +30,10 @@ class PlacementDriveService {
   Future<void> updateDrive(PlacementDrive drive) async {
     if (drive.id == null) return;
     try {
-      await _client.from('placement_drives').update(drive.toJson()).eq('id', drive.id!);
+      await _client
+          .from('placement_drives')
+          .update(drive.toJson())
+          .eq('id', drive.id!);
     } catch (e) {
       throw Exception('Failed to update drive: $e');
     }
@@ -62,7 +65,9 @@ class PlacementDriveService {
     }
   }
 
-  Future<List<Map<String, dynamic>>> getApplicationsForStudent(String studentId) async {
+  Future<List<Map<String, dynamic>>> getApplicationsForStudent(
+    String studentId,
+  ) async {
     try {
       final response = await _client
           .from('placement_applications')
@@ -75,7 +80,10 @@ class PlacementDriveService {
     }
   }
 
-  Future<void> updateApplicationStatus(String applicationId, String status) async {
+  Future<void> updateApplicationStatus(
+    String applicationId,
+    String status,
+  ) async {
     try {
       await _client
           .from('placement_applications')

@@ -5,7 +5,7 @@ import 'supabase_service.dart';
 class CompanyService {
   final _client = SupabaseService.client;
 
-  Future<List<Company>> getCompanies() async {
+  Future<List<Company>> getAllCompanies() async {
     try {
       final response = await _client
           .from('companies')

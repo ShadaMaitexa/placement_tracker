@@ -302,6 +302,7 @@ class _AdminHomeState extends State<AdminHome> {
                 padding: const EdgeInsets.all(16),
                 child: Column(
                   mainAxisAlignment: MainAxisAlignment.center,
+                  mainAxisSize: MainAxisSize.min,
                   children: [
                     Container(
                       padding: EdgeInsets.all(context.responsive(16.0, tablet: 20.0)),
@@ -313,15 +314,18 @@ class _AdminHomeState extends State<AdminHome> {
                       child: Icon(icon, color: Colors.white, size: context.responsive(24.0, tablet: 32.0)),
                     ),
                     const SizedBox(height: 12),
-                    Text(
-                      title, 
-                      style: GoogleFonts.outfit(
-                        fontSize: context.responsive(13.0, tablet: 15.0), 
-                        fontWeight: FontWeight.bold, 
-                        color: Colors.white
-                      ), 
-                      textAlign: TextAlign.center,
-                      maxLines: 1,
+                    Flexible(
+                      child: Text(
+                        title, 
+                        style: GoogleFonts.outfit(
+                          fontSize: context.responsive(13.0, tablet: 15.0), 
+                          fontWeight: FontWeight.bold, 
+                          color: Colors.white
+                        ), 
+                        textAlign: TextAlign.center,
+                        maxLines: 2,
+                        overflow: TextOverflow.ellipsis,
+                      ),
                     ),
                   ],
                 ),

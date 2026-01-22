@@ -33,7 +33,10 @@ class StudentService {
   Future<void> updateStudent(Student student) async {
     if (student.id == null) return;
     try {
-      await _client.from('students').update(student.toJson()).eq('id', student.id!);
+      await _client
+          .from('students')
+          .update(student.toJson())
+          .eq('id', student.id!);
     } catch (e) {
       throw Exception('Failed to update student: $e');
     }
@@ -41,7 +44,7 @@ class StudentService {
 
   // Delete student (Day 11 - Pre-emptive)
   Future<void> deleteStudent(String id) async {
-     try {
+    try {
       await _client.from('students').delete().eq('id', id);
     } catch (e) {
       throw Exception('Failed to delete student: $e');
@@ -63,18 +66,26 @@ class StudentService {
     }
   }
 
-  Future<Student?> getStudentById(String id) async {
+  Future<String?> getStudentIdByEmail(String email) async {
+    try {
+      final student = await getStudentByEmail(email);
+      return student?.id;
+    } catch (e) {
+      throw Exception('Failed to fetch student ID: $e');
+    }
+  }
+
+  Future<List<String>> getAppliedDriveIds(String studentId) async {
     try {
       final response = await _client
-          .from('students')
-          .select()
-          .eq('id', id)
-          .maybeSingle();
+          .from('placement_applications')
+          .select('drive_id')
+          .eq('student_id', studentId);
 
-      if (response == null) return null;
-      return Student.fromJson(response);
+      final data = response as List<dynamic>;
+      return data.map((json) => json['drive_id'] as String).toList();
     } catch (e) {
-      throw Exception('Failed to fetch student by ID: $e');
+      throw Exception('Failed to fetch applied drive IDs: $e');
     }
   }
 }

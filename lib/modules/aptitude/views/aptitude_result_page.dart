@@ -113,7 +113,7 @@ class _AptitudeResultListPageState extends State<AptitudeResultListPage> {
                               ),
                               delegate: SliverChildBuilderDelegate(
                                 (context, index) => _buildResultCard(_results[index]),
-                                itemCount: _results.length,
+                                childCount: _results.length,
                               ),
                             ),
                             const SliverToBoxAdapter(child: SizedBox(height: 40)),

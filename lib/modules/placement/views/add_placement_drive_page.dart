@@ -24,7 +24,7 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
   late TextEditingController _salaryCtrl;
   late TextEditingController _locationCtrl;
   late TextEditingController _eligibilityCtrl;
-  
+
   String? _selectedCompanyId;
   DateTime? _driveDate;
   DateTime? _deadlineDate;
@@ -41,210 +41,146 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
     _descCtrl = TextEditingController(text: widget.drive?.description);
     _salaryCtrl = TextEditingController(text: widget.drive?.salaryPackage);
     _locationCtrl = TextEditingController(text: widget.drive?.location);
-    _eligibilityCtrl = TextEditingController(text: widget.drive?.eligibilityCriteria);
-    
+    _eligibilityCtrl = TextEditingController(
+      text: widget.drive?.eligibilityCriteria,
+    );
+
     _selectedCompanyId = widget.drive?.companyId;
     _driveDate = widget.drive?.driveDate;
     _deadlineDate = widget.drive?.applicationDeadline;
     if (widget.drive != null) _status = widget.drive!.status;
-    
+
     _loadCompanies();
   }
 
   Future<void> _loadCompanies() async {
+    setState(() => _isLoading = true);
     try {
-      final data = await _companyService.getCompanies();
-      setState(() => _companies = data);
+      _companies = await _companyService.getAllCompanies();
     } catch (e) {
-      // safe fail
+      if (mounted)
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
+    } finally {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
+
+  @override
+  void dispose() {
+    _titleCtrl.dispose();
+    _roleCtrl.dispose();
+    _descCtrl.dispose();
+    _salaryCtrl.dispose();
+    _locationCtrl.dispose();
+    _eligibilityCtrl.dispose();
+    super.dispose();
+  }
+
+  Future<void> _submit() async {
+    if (_formKey.currentState!.validate()) {
+      setState(() => _isLoading = true);
+      try {
+        final newDrive = PlacementDrive(
+          title: _titleCtrl.text,
+          jobRole: _roleCtrl.text,
+          description: _descCtrl.text,
+          salaryPackage: _salaryCtrl.text,
+          location: _locationCtrl.text,
+          eligibilityCriteria: _eligibilityCtrl.text,
+          companyId: _selectedCompanyId!,
+          driveDate: _driveDate,
+          applicationDeadline: _deadlineDate,
+          status: _status,
+        );
+        await _placementService.addPlacementDrive(newDrive);
+        if (mounted) Navigator.pop(context);
+      } catch (e) {
+        if (mounted)
+          ScaffoldMessenger.of(
+            context,
+          ).showSnackBar(SnackBar(content: Text(e.toString())));
+      } finally {
+        if (mounted) setState(() => _isLoading = false);
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
     return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text(widget.drive == null ? 'Schedule Drive' : 'Edit Drive', 
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
-      ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Form(
-            key: _formKey,
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                _buildSectionTitle('General Details'),
-                const SizedBox(height: 16),
-                _buildCard([
-                  DropdownButtonFormField<String>(
-                    value: _selectedCompanyId,
-                    items: _companies.map((c) => DropdownMenuItem(
-                      value: c.id, 
-                      child: Text(c.name, style: GoogleFonts.inter()),
-                    )).toList(),
-                    onChanged: (v) => setState(() => _selectedCompanyId = v),
-                    decoration: InputDecoration(
-                      labelText: 'Select Company',
-                      prefixIcon: const Icon(Icons.business, color: Color(0xFF3B82F6)),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+      appBar: AppBar(title: Text('Add Placement Drive')),
+      body: _isLoading
+          ? Center(child: CircularProgressIndicator())
+          : Form(
+              key: _formKey,
+              child: SingleChildScrollView(
+                padding: EdgeInsets.all(16.0),
+                child: Column(
+                  children: [
+                    TextFormField(
+                      controller: _titleCtrl,
+                      decoration: InputDecoration(labelText: 'Title'),
+                      validator: (value) =>
+                          value!.isEmpty ? 'Please enter a title' : null,
                     ),
-                    validator: (v) => v == null ? 'Required' : null,
-                  ),
-                  const SizedBox(height: 16),
-                  _textField(_titleCtrl, 'Drive Title (e.g. Campus Recruitment 2024)', Icons.title),
-                  _textField(_roleCtrl, 'Job Role / Designation', Icons.work_outline),
-                  _textField(_salaryCtrl, 'Salary Package (e.g. 8.5 LPA)', Icons.payments_outlined),
-                  _textField(_locationCtrl, 'Location (e.g. Remote, Bangalore)', Icons.location_on_outlined),
-                ]),
-                const SizedBox(height: 24),
-                _buildSectionTitle('Criteria & Description'),
-                const SizedBox(height: 16),
-                _buildCard([
-                   _textField(_eligibilityCtrl, 'Eligibility Criteria (e.g. 70% in 10th/12th)', Icons.checklist_outlined),
-                   _textField(_descCtrl, 'Job Description', Icons.description_outlined, maxLines: 4),
-                ]),
-                const SizedBox(height: 24),
-                _buildSectionTitle('Schedule & Deadlines'),
-                const SizedBox(height: 16),
-                _buildCard([
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    onTap: () async {
-                      final d = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime(2030));
-                      if (d != null) setState(() => _driveDate = d);
-                    },
-                    leading: const Icon(Icons.calendar_month, color: Color(0xFF3B82F6)),
-                    title: Text('Drive Date', style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF64748B))),
-                    subtitle: Text(
-                      _driveDate == null ? 'Select Date' : '${_driveDate!.day}/${_driveDate!.month}/${_driveDate!.year}',
-                      style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+                    TextFormField(
+                      controller: _roleCtrl,
+                      decoration: InputDecoration(labelText: 'Job Role'),
+                      validator: (value) =>
+                          value!.isEmpty ? 'Please enter a job role' : null,
                     ),
-                  ),
-                  const Divider(),
-                  ListTile(
-                    contentPadding: EdgeInsets.zero,
-                    onTap: () async {
-                      final d = await showDatePicker(context: context, initialDate: DateTime.now(), firstDate: DateTime.now(), lastDate: DateTime(2030));
-                      if (d != null) setState(() => _deadlineDate = d);
-                    },
-                    leading: const Icon(Icons.timer_outlined, color: Color(0xFFF59E0B)),
-                    title: Text('Application Deadline', style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF64748B))),
-                    subtitle: Text(
-                      _deadlineDate == null ? 'Select Deadline' : '${_deadlineDate!.day}/${_deadlineDate!.month}/${_deadlineDate!.year}',
-                      style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+                    TextFormField(
+                      controller: _descCtrl,
+                      decoration: InputDecoration(labelText: 'Description'),
+                      validator: (value) =>
+                          value!.isEmpty ? 'Please enter a description' : null,
                     ),
-                  ),
-                ]),
-                const SizedBox(height: 24),
-                _buildSectionTitle('Current Status'),
-                const SizedBox(height: 16),
-                _buildCard([
-                  DropdownButtonFormField<String>(
-                    value: _status,
-                    items: ['upcoming', 'ongoing', 'completed', 'cancelled']
-                        .map((s) => DropdownMenuItem(value: s, child: Text(s.toUpperCase())))
-                        .toList(),
-                    onChanged: (v) => setState(() => _status = v!),
-                    decoration: InputDecoration(
-                      labelText: 'Drive Status',
-                      prefixIcon: const Icon(Icons.info_outline, color: Color(0xFF3B82F6)),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                    TextFormField(
+                      controller: _salaryCtrl,
+                      decoration: InputDecoration(labelText: 'Salary Package'),
+                      validator: (value) => value!.isEmpty
+                          ? 'Please enter a salary package'
+                          : null,
                     ),
-                  ),
-                ]),
-                const SizedBox(height: 32),
-                SizedBox(
-                  width: double.infinity,
-                  child: ElevatedButton(
-                    onPressed: _isLoading ? null : _saveDrive,
-                    style: ElevatedButton.styleFrom(
-                      backgroundColor: const Color(0xFF3B82F6),
-                      padding: const EdgeInsets.symmetric(vertical: 18),
-                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    TextFormField(
+                      controller: _locationCtrl,
+                      decoration: InputDecoration(labelText: 'Location'),
+                      validator: (value) =>
+                          value!.isEmpty ? 'Please enter a location' : null,
                     ),
-                    child: _isLoading 
-                      ? const CircularProgressIndicator(color: Colors.white)
-                      : Text('Save Placement Drive', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
-                  ),
+                    TextFormField(
+                      controller: _eligibilityCtrl,
+                      decoration: InputDecoration(
+                        labelText: 'Eligibility Criteria',
+                      ),
+                      validator: (value) => value!.isEmpty
+                          ? 'Please enter eligibility criteria'
+                          : null,
+                    ),
+                    DropdownButtonFormField<String>(
+                      value: _selectedCompanyId,
+                      decoration: InputDecoration(labelText: 'Select Company'),
+                      items: _companies.map((company) {
+                        return DropdownMenuItem<String>(
+                          value: company.id,
+                          child: Text(company.name),
+                        );
+                      }).toList(),
+                      onChanged: (value) {
+                        setState(() {
+                          _selectedCompanyId = value;
+                        });
+                      },
+                      validator: (value) =>
+                          value == null ? 'Please select a company' : null,
+                    ),
+                    ElevatedButton(onPressed: _submit, child: Text('Submit')),
+                  ],
                 ),
-                const SizedBox(height: 40),
-              ],
+              ),
             ),
-          ),
-        ),
-      ),
     );
-  }
-
-  Widget _buildSectionTitle(String title) {
-    return Text(title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)));
-  }
-
-  Widget _buildCard(List<Widget> children) {
-    return Container(
-      padding: const EdgeInsets.all(16),
-      decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
-      ),
-      child: Column(children: children),
-    );
-  }
-
-  Widget _textField(TextEditingController c, String label, IconData icon, {int maxLines = 1}) {
-    return Padding(
-      padding: const EdgeInsets.only(bottom: 12),
-      child: TextFormField(
-        controller: c,
-        maxLines: maxLines,
-        validator: (v) => (label.contains('Role') || label.contains('Title')) && (v == null || v.isEmpty) ? 'Required' : null,
-        decoration: InputDecoration(
-          labelText: label,
-          prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
-          border: UnderlineInputBorder(borderSide: BorderSide(color: Colors.grey[200]!)),
-        ),
-      ),
-    );
-  }
-
-  Future<void> _saveDrive() async {
-    if (!_formKey.currentState!.validate()) return;
-    setState(() => _isLoading = true);
-
-    try {
-      final drive = PlacementDrive(
-        id: widget.drive?.id,
-        companyId: _selectedCompanyId!,
-        title: _titleCtrl.text.isEmpty ? _roleCtrl.text : _titleCtrl.text,
-        jobRole: _roleCtrl.text,
-        description: _descCtrl.text,
-        salaryPackage: _salaryCtrl.text,
-        location: _locationCtrl.text,
-        eligibilityCriteria: _eligibilityCtrl.text,
-        driveDate: _driveDate,
-        applicationDeadline: _deadlineDate,
-        status: _status,
-      );
-
-      if (widget.drive == null) {
-        await _placementService.addDrive(drive);
-      } else {
-        await _placementService.updateDrive(drive);
-      }
-
-      if (!mounted) return;
-      Navigator.pop(context, true);
-    } catch (e) {
-      if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
-    } finally {
-      if (mounted) setState(() => _isLoading = false);
-    }
   }
 }

@@ -104,7 +104,7 @@ class _StudentListPageState extends State<StudentListPage> {
                                   ),
                                   delegate: SliverChildBuilderDelegate(
                                     (context, index) => _buildStudentCard(_filteredStudents[index]),
-                                    itemCount: _filteredStudents.length,
+                                    childCount: _filteredStudents.length,
                                   ),
                                 ),
                                 const SliverToBoxAdapter(child: SizedBox(height: 40)),

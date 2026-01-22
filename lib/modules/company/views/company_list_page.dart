@@ -25,7 +25,7 @@ class _CompanyListPageState extends State<CompanyListPage> {
   Future<void> _loadCompanies() async {
     setState(() => _isLoading = true);
     try {
-      final data = await _companyService.getCompanies();
+      final data = await _companyService.getAllCompanies();
       setState(() {
         _companies = data;
         _isLoading = false;
@@ -33,7 +33,9 @@ class _CompanyListPageState extends State<CompanyListPage> {
     } catch (e) {
       if (mounted) {
         setState(() => _isLoading = false);
-        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+        ScaffoldMessenger.of(
+          context,
+        ).showSnackBar(SnackBar(content: Text(e.toString())));
       }
     }
   }
@@ -43,32 +45,41 @@ class _CompanyListPageState extends State<CompanyListPage> {
     return Scaffold(
       backgroundColor: const Color(0xFFF8FAFC),
       appBar: AppBar(
-        title: Text('Company Database', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        title: Text(
+          'Company Database',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+        ),
         elevation: 0,
         backgroundColor: Colors.white,
         foregroundColor: const Color(0xFF0F172A),
       ),
       floatingActionButton: FloatingActionButton.extended(
         onPressed: () async {
-          final res = await Navigator.push(context, MaterialPageRoute(builder: (_) => const AddCompanyPage()));
+          final res = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => const AddCompanyPage()),
+          );
           if (res == true) _loadCompanies();
         },
         backgroundColor: const Color(0xFF10B981),
-        label: Text('Add Company', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+        label: Text(
+          'Add Company',
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold),
+        ),
         icon: const Icon(Icons.add),
       ),
       body: _isLoading
           ? const Center(child: CircularProgressIndicator())
           : _companies.isEmpty
-              ? _buildEmptyState()
-              : ListView.builder(
-                  padding: const EdgeInsets.all(16),
-                  itemCount: _companies.length,
-                  itemBuilder: (context, index) {
-                    final company = _companies[index];
-                    return _buildCompanyCard(company);
-                  },
-                ),
+          ? _buildEmptyState()
+          : ListView.builder(
+              padding: const EdgeInsets.all(16),
+              itemCount: _companies.length,
+              itemBuilder: (context, index) {
+                final company = _companies[index];
+                return _buildCompanyCard(company);
+              },
+            ),
     );
   }
 
@@ -92,31 +103,63 @@ class _CompanyListPageState extends State<CompanyListPage> {
           alignment: Alignment.center,
           child: Text(
             company.name.isNotEmpty ? company.name[0].toUpperCase() : '?',
-            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 24, color: const Color(0xFF10B981)),
+            style: GoogleFonts.outfit(
+              fontWeight: FontWeight.bold,
+              fontSize: 24,
+              color: const Color(0xFF10B981),
+            ),
           ),
         ),
-        title: Text(company.name, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18)),
+        title: Text(
+          company.name,
+          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18),
+        ),
         subtitle: Column(
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             const SizedBox(height: 4),
-            Text('${company.hrName ?? "No HR Contact"} • ${company.hrDesignation ?? "Company"}', 
-              style: GoogleFonts.inter(fontSize: 13, color: const Color(0xFF64748B))),
+            Text(
+              '${company.hrName ?? "No HR Contact"} • ${company.hrDesignation ?? "Company"}',
+              style: GoogleFonts.inter(
+                fontSize: 13,
+                color: const Color(0xFF64748B),
+              ),
+            ),
             const SizedBox(height: 8),
             if (company.hiringRoles != null && company.hiringRoles!.isNotEmpty)
               Wrap(
                 spacing: 6,
-                children: company.hiringRoles!.take(3).map((role) => Container(
-                  padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                  decoration: BoxDecoration(color: const Color(0xFFF1F5F9), borderRadius: BorderRadius.circular(4)),
-                  child: Text(role, style: GoogleFonts.inter(fontSize: 10, color: const Color(0xFF475569))),
-                )).toList(),
+                children: company.hiringRoles!
+                    .take(3)
+                    .map(
+                      (role) => Container(
+                        padding: const EdgeInsets.symmetric(
+                          horizontal: 8,
+                          vertical: 2,
+                        ),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFFF1F5F9),
+                          borderRadius: BorderRadius.circular(4),
+                        ),
+                        child: Text(
+                          role,
+                          style: GoogleFonts.inter(
+                            fontSize: 10,
+                            color: const Color(0xFF475569),
+                          ),
+                        ),
+                      ),
+                    )
+                    .toList(),
               ),
           ],
         ),
         trailing: const Icon(Icons.chevron_right),
         onTap: () async {
-          final res = await Navigator.push(context, MaterialPageRoute(builder: (_) => AddCompanyPage(company: company)));
+          final res = await Navigator.push(
+            context,
+            MaterialPageRoute(builder: (_) => AddCompanyPage(company: company)),
+          );
           if (res == true) _loadCompanies();
         },
       ),
@@ -124,13 +167,16 @@ class _CompanyListPageState extends State<CompanyListPage> {
   }
 
   Widget _buildEmptyState() {
-     return Center(
+    return Center(
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
           Icon(Icons.business_outlined, size: 64, color: Colors.grey[300]),
           const SizedBox(height: 16),
-          Text('No companies registered', style: GoogleFonts.outfit(fontSize: 18, color: Colors.grey[600])),
+          Text(
+            'No companies registered',
+            style: GoogleFonts.outfit(fontSize: 18, color: Colors.grey[600]),
+          ),
         ],
       ),
     );
