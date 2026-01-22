@@ -130,7 +130,6 @@ class _AptitudeResultListPageState extends State<AptitudeResultListPage> {
                       ),
                     ),
                   ),
-                  ),
                 ),
       ),
     );
