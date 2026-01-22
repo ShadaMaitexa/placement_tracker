@@ -19,7 +19,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
   final _authService = AuthService();
   Student? _student;
   bool _isLoading = true;
-
+ 
   @override
   void initState() {
     super.initState();
