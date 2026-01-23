@@ -13,6 +13,7 @@ class AddTestPage extends StatefulWidget {
 }
 
 class _AddTestPageState extends State<AddTestPage> {
+  final _formKey = GlobalKey<FormState>();
   final _service = AptitudeService();
   final _titleCtrl = TextEditingController();
   final _batchCtrl = TextEditingController();
@@ -37,68 +38,75 @@ class _AddTestPageState extends State<AddTestPage> {
           backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
         ),
-      body: Padding(
-        padding: const EdgeInsets.all(20),
-        child: Column(
-          children: [
-            Container(
-              padding: const EdgeInsets.all(20),
-              decoration: BoxDecoration(
-                color: Colors.white.withValues(alpha: 0.05),
-                borderRadius: BorderRadius.circular(16),
-                border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
-              ),
-              child: Column(
-                children: [
-                  TextField(
-                    controller: _titleCtrl,
-                    decoration: InputDecoration(
-                      labelText: 'Test Title',
-                      prefixIcon: const Icon(Icons.title, color: Color(0xFF3B82F6)),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
+      body: SingleChildScrollView(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              children: [
+                Container(
+                  padding: const EdgeInsets.all(20),
+                  decoration: BoxDecoration(
+                    color: Colors.white.withValues(alpha: 0.05),
+                    borderRadius: BorderRadius.circular(16),
+                    border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
                   ),
-                  const SizedBox(height: 16),
-                  DropdownButtonFormField<String>(
-                    value: _type,
-                    items: ['quant', 'reasoning', 'verbal', 'coding']
-                        .map((t) => DropdownMenuItem(value: t, child: Text(t.toUpperCase(), style: GoogleFonts.inter())))
-                        .toList(),
-                    onChanged: (v) => setState(() => _type = v!),
-                    decoration: InputDecoration(
-                      labelText: 'Type',
-                      prefixIcon: const Icon(Icons.category_outlined, color: Color(0xFF3B82F6)),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
+                  child: Column(
+                    children: [
+                      TextFormField(
+                        controller: _titleCtrl,
+                        validator: (v) => v == null || v.isEmpty ? 'Please enter test title' : null,
+                        decoration: InputDecoration(
+                          labelText: 'Test Title',
+                          prefixIcon: const Icon(Icons.title, color: Color(0xFF3B82F6)),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      DropdownButtonFormField<String>(
+                        value: _type,
+                        items: ['quant', 'reasoning', 'verbal', 'coding']
+                            .map((t) => DropdownMenuItem(value: t, child: Text(t.toUpperCase(), style: GoogleFonts.inter())))
+                            .toList(),
+                        onChanged: (v) => setState(() => _type = v!),
+                        validator: (v) => v == null ? 'Required' : null,
+                        decoration: InputDecoration(
+                          labelText: 'Type',
+                          prefixIcon: const Icon(Icons.category_outlined, color: Color(0xFF3B82F6)),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      TextFormField(
+                        controller: _batchCtrl,
+                        decoration: InputDecoration(
+                          labelText: 'Assigned Batch (Optional)',
+                          prefixIcon: const Icon(Icons.group_outlined, color: Color(0xFF3B82F6)),
+                          border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
+                        ),
+                      ),
+                    ],
                   ),
-                  const SizedBox(height: 16),
-                  TextField(
-                    controller: _batchCtrl,
-                    decoration: InputDecoration(
-                      labelText: 'Assigned Batch (Optional)',
-                      prefixIcon: const Icon(Icons.group_outlined, color: Color(0xFF3B82F6)),
-                      border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
-                    ),
-                  ),
-                ],
-              ),
-            ),
-            const SizedBox(height: 32),
-            SizedBox(
-              width: double.infinity,
-              child: ElevatedButton(
-                onPressed: _isLoading ? null : _save,
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: const Color(0xFF3B82F6),
-                  padding: const EdgeInsets.symmetric(vertical: 18),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                 ),
-                child: _isLoading 
-                  ? const CircularProgressIndicator(color: Colors.white)
-                  : Text('Create Test', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
-              ),
-            )
-          ],
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B82F6),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: _isLoading 
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text('Create Test', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                  ),
+                )
+              ],
+            ),
+          ),
         ),
       ),
       ),
@@ -106,7 +114,7 @@ class _AddTestPageState extends State<AddTestPage> {
   }
 
   Future<void> _save() async {
-    if (_titleCtrl.text.isEmpty) return;
+    if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
       await _service.addTest(AptitudeTest(
@@ -360,6 +368,7 @@ class AddResultPage extends StatefulWidget {
 }
 
 class _AddResultPageState extends State<AddResultPage> {
+  final _formKey = GlobalKey<FormState>();
   final _service = AptitudeService();
   final _stuService = StudentService();
   
@@ -407,56 +416,76 @@ class _AddResultPageState extends State<AddResultPage> {
         ),
         body: Padding(
         padding: const EdgeInsets.all(20),
-        child: ListView(
-          children: [
-             DropdownButtonFormField<String>(
-              value: _selectedStudent,
-              hint: const Text('Select Student'),
-              items: _students.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))).toList(),
-              onChanged: (v) => setState(() => _selectedStudent = v),
-              decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
-            ),
-            const SizedBox(height: 16),
-            DropdownButtonFormField<String>(
-              value: _selectedTest,
-              hint: const Text('Select Test'),
-              items: _tests.map((t) => DropdownMenuItem(value: t.id, child: Text(t.title))).toList(),
-              onChanged: (v) => setState(() => _selectedTest = v),
-              decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
-            ),
-            const SizedBox(height: 24),
-            Row(
-              children: [
-                Expanded(child: _field(_scoreCtrl, 'Score obtained')),
-                const SizedBox(width: 12),
-                Expanded(child: _field(_accuracyCtrl, 'Accuracy %')),
-              ],
-            ),
-            const SizedBox(height: 16),
-            _field(_timeCtrl, 'Time Taken (minutes)'),
-            const SizedBox(height: 32),
-            ElevatedButton(
-              onPressed: _save,
-              style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 18)),
-              child: const Text('Save Result'),
-            )
-          ],
+        child: Form(
+          key: _formKey,
+          child: ListView(
+            children: [
+               DropdownButtonFormField<String>(
+                value: _selectedStudent,
+                hint: const Text('Select Student'),
+                items: _students.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))).toList(),
+                onChanged: (v) => setState(() => _selectedStudent = v),
+                validator: (v) => v == null ? 'Please select a student' : null,
+                decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+              ),
+              const SizedBox(height: 16),
+              DropdownButtonFormField<String>(
+                value: _selectedTest,
+                hint: const Text('Select Test'),
+                items: _tests.map((t) => DropdownMenuItem(value: t.id, child: Text(t.title))).toList(),
+                onChanged: (v) => setState(() => _selectedTest = v),
+                validator: (v) => v == null ? 'Please select a test' : null,
+                decoration: InputDecoration(border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
+              ),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(child: _field(_scoreCtrl, 'Score obtained', (v) {
+                    if (v == null || v.isEmpty) return 'Required';
+                    if (int.tryParse(v) == null) return 'Invalid number';
+                    return null;
+                  })),
+                  const SizedBox(width: 12),
+                  Expanded(child: _field(_accuracyCtrl, 'Accuracy %', (v) {
+                     if (v == null || v.isEmpty) return 'Required';
+                     final val = double.tryParse(v);
+                     if (val == null || val < 0 || val > 100) return 'Invalid %';
+                     return null;
+                  })),
+                ],
+              ),
+              const SizedBox(height: 16),
+              _field(_timeCtrl, 'Time Taken (minutes)', (v) {
+                 if (v == null || v.isEmpty) return 'Required';
+                 if (int.tryParse(v) == null) return 'Invalid time';
+                 return null;
+              }),
+              const SizedBox(height: 32),
+              ElevatedButton(
+                onPressed: _save,
+                style: ElevatedButton.styleFrom(padding: const EdgeInsets.symmetric(vertical: 18)),
+                child: const Text('Save Result'),
+              )
+            ],
+          ),
         ),
       ),
       ),
     );
   }
 
-  Widget _field(TextEditingController c, String label) {
-    return TextField(
+  Widget _field(TextEditingController c, String label, String? Function(String?)? validator) {
+    return TextFormField(
       controller: c,
       keyboardType: TextInputType.number,
+      validator: validator,
       decoration: InputDecoration(labelText: label, border: OutlineInputBorder(borderRadius: BorderRadius.circular(12))),
     );
   }
 
   Future<void> _save() async {
-    if (_selectedStudent == null || _selectedTest == null) return;
+    if (!_formKey.currentState!.validate()) return;
+    
     final test = _tests.firstWhere((t) => t.id == _selectedTest);
     
     try {

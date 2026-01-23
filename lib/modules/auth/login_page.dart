@@ -32,6 +32,8 @@ class _LoginPageState extends State<LoginPage> {
     {'value': 'trainer', 'label': 'Trainer'},
   ];
 
+  final _formKey = GlobalKey<FormState>();
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -79,103 +81,119 @@ class _LoginPageState extends State<LoginPage> {
                             borderRadius: BorderRadius.circular(30),
                             border: Border.all(color: Colors.white.withValues(alpha: 0.2)),
                           ),
-                          child: Column(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Container(
-                                padding: const EdgeInsets.all(16),
-                                decoration: BoxDecoration(
-                                  color: Colors.white,
-                                  shape: BoxShape.circle,
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: Colors.blue.withValues(alpha: 0.3),
-                                      blurRadius: 20,
-                                      spreadRadius: 5,
-                                    ),
-                                  ],
-                                ),
-                                child: const Icon(Icons.school_rounded, color: Color(0xFF3B82F6), size: 40),
-                              ),
-                              const SizedBox(height: 24),
-                              Text(
-                                'Placement Tracker',
-                                style: GoogleFonts.outfit(
-                                  fontSize: context.responsive(28.0, tablet: 32.0),
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                  letterSpacing: 1.2,
-                                ),
-                              ),
-                              Text(
-                                'Empowering Futures, One Placement at a Time',
-                                style: GoogleFonts.inter(
-                                  fontSize: 14,
-                                  color: Colors.white60,
-                                ),
-                                textAlign: TextAlign.center,
-                              ),
-                              const SizedBox(height: 32),
-                              if (_isSignUp) ...[
-                                _buildTextField(
-                                  controller: nameController,
-                                  label: 'Full Name',
-                                  icon: Icons.person_outline,
-                                ),
-                                const SizedBox(height: 16),
-                                _buildRoleSelector(),
-                                const SizedBox(height: 16),
-                              ],
-                              _buildTextField(
-                                controller: emailController,
-                                label: 'Email Address',
-                                icon: Icons.email_outlined,
-                                keyboardType: TextInputType.emailAddress,
-                              ),
-                              const SizedBox(height: 16),
-                              _buildTextField(
-                                controller: passwordController,
-                                label: 'Password',
-                                icon: Icons.lock_outline,
-                                isPassword: true,
-                              ),
-                              const SizedBox(height: 32),
-                              SizedBox(
-                                width: double.infinity,
-                                child: ElevatedButton(
-                                  onPressed: loading ? null : _handleAuth,
-                                  style: ElevatedButton.styleFrom(
-                                    backgroundColor: Colors.white,
-                                    foregroundColor: const Color(0xFF0F172A),
-                                    padding: const EdgeInsets.symmetric(vertical: 16),
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
-                                    elevation: 0,
-                                  ),
-                                  child: loading
-                                      ? const CircularProgressIndicator(color: Color(0xFF0F172A))
-                                      : Text(
-                                          _isSignUp ? 'Create Account' : 'Sign In',
-                                          style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold),
-                                        ),
-                                ),
-                              ),
-                              const SizedBox(height: 24),
-                              TextButton(
-                                onPressed: () => setState(() => _isSignUp = !_isSignUp),
-                                child: RichText(
-                                  text: TextSpan(
-                                    style: GoogleFonts.inter(fontSize: 14, color: Colors.white70),
-                                    children: [
-                                      TextSpan(text: _isSignUp ? 'Already have an account? ' : "Don't have an account? "),
-                                      TextSpan(
-                                        text: _isSignUp ? 'Sign In' : 'Sign Up',
-                                        style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                          child: Form(
+                            key: _formKey,
+                            child: Column(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Container(
+                                  padding: const EdgeInsets.all(16),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    shape: BoxShape.circle,
+                                    boxShadow: [
+                                      BoxShadow(
+                                        color: Colors.blue.withValues(alpha: 0.3),
+                                        blurRadius: 20,
+                                        spreadRadius: 5,
                                       ),
                                     ],
                                   ),
+                                  child: const Icon(Icons.school_rounded, color: Color(0xFF3B82F6), size: 40),
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 24),
+                                Text(
+                                  'Placement Tracker',
+                                  style: GoogleFonts.outfit(
+                                    fontSize: context.responsive(28.0, tablet: 32.0),
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                    letterSpacing: 1.2,
+                                  ),
+                                ),
+                                Text(
+                                  'Empowering Futures, One Placement at a Time',
+                                  style: GoogleFonts.inter(
+                                    fontSize: 14,
+                                    color: Colors.white60,
+                                  ),
+                                  textAlign: TextAlign.center,
+                                ),
+                                const SizedBox(height: 32),
+                                if (_isSignUp) ...[
+                                  _buildTextField(
+                                    controller: nameController,
+                                    label: 'Full Name',
+                                    icon: Icons.person_outline,
+                                    validator: (value) => value == null || value.isEmpty ? 'Name is required' : null,
+                                  ),
+                                  const SizedBox(height: 16),
+                                  _buildRoleSelector(),
+                                  const SizedBox(height: 16),
+                                ],
+                                _buildTextField(
+                                  controller: emailController,
+                                  label: 'Email Address',
+                                  icon: Icons.email_outlined,
+                                  keyboardType: TextInputType.emailAddress,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) return 'Email is required';
+                                    if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(value)) {
+                                      return 'Enter a valid email';
+                                    }
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 16),
+                                _buildTextField(
+                                  controller: passwordController,
+                                  label: 'Password',
+                                  icon: Icons.lock_outline,
+                                  isPassword: true,
+                                  validator: (value) {
+                                    if (value == null || value.isEmpty) return 'Password is required';
+                                    if (value.length < 6) return 'Password must be at least 6 characters';
+                                    return null;
+                                  },
+                                ),
+                                const SizedBox(height: 32),
+                                SizedBox(
+                                  width: double.infinity,
+                                  child: ElevatedButton(
+                                    onPressed: loading ? null : _handleAuth,
+                                    style: ElevatedButton.styleFrom(
+                                      backgroundColor: Colors.white,
+                                      foregroundColor: const Color(0xFF0F172A),
+                                      padding: const EdgeInsets.symmetric(vertical: 16),
+                                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(15)),
+                                      elevation: 0,
+                                    ),
+                                    child: loading
+                                        ? const CircularProgressIndicator(color: Color(0xFF0F172A))
+                                        : Text(
+                                            _isSignUp ? 'Create Account' : 'Sign In',
+                                            style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold),
+                                          ),
+                                  ),
+                                ),
+                                const SizedBox(height: 24),
+                                TextButton(
+                                  onPressed: () => setState(() => _isSignUp = !_isSignUp),
+                                  child: RichText(
+                                    text: TextSpan(
+                                      style: GoogleFonts.inter(fontSize: 14, color: Colors.white70),
+                                      children: [
+                                        TextSpan(text: _isSignUp ? 'Already have an account? ' : "Don't have an account? "),
+                                        TextSpan(
+                                          text: _isSignUp ? 'Sign In' : 'Sign Up',
+                                          style: const TextStyle(color: Colors.white, fontWeight: FontWeight.bold),
+                                        ),
+                                      ],
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
                       ),
@@ -237,6 +255,7 @@ class _LoginPageState extends State<LoginPage> {
     required IconData icon,
     bool isPassword = false,
     TextInputType keyboardType = TextInputType.text,
+    String? Function(String?)? validator,
   }) {
     return Container(
       decoration: BoxDecoration(
@@ -244,11 +263,12 @@ class _LoginPageState extends State<LoginPage> {
         borderRadius: BorderRadius.circular(12),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
-      child: TextField(
+      child: TextFormField(
         controller: controller,
         obscureText: isPassword && _isObscure,
         keyboardType: keyboardType,
         style: GoogleFonts.inter(color: Colors.white),
+        validator: validator,
         decoration: InputDecoration(
           labelText: label,
           labelStyle: GoogleFonts.inter(color: Colors.white60),
@@ -261,14 +281,14 @@ class _LoginPageState extends State<LoginPage> {
               : null,
           border: InputBorder.none,
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          errorStyle: const TextStyle(color: Colors.redAccent),
         ),
       ),
     );
   }
 
   Future<void> _handleAuth() async {
-    if (emailController.text.isEmpty || passwordController.text.isEmpty) {
-      ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Please fill all fields')));
+    if (!_formKey.currentState!.validate()) {
       return;
     }
     setState(() => loading = true);

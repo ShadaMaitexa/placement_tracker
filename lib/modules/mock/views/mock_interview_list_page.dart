@@ -30,6 +30,8 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
   String _status = 'ready';
   bool _isLoading = false;
 
+  final _formKey = GlobalKey<FormState>();
+
   @override
   void initState() {
     super.initState();
@@ -62,35 +64,38 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
       body: SingleChildScrollView(
         child: Padding(
           padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              _buildSelectionCard(),
-              const SizedBox(height: 24),
-              Text('Performance Scores', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-              const SizedBox(height: 16),
-              _buildScoreCard(),
-              const SizedBox(height: 24),
-              Text('Conclusion', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
-              const SizedBox(height: 16),
-              _buildConclusionCard(),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _isLoading ? null : _save,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: const Color(0xFF3B82F6),
-                    padding: const EdgeInsets.symmetric(vertical: 18),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          child: Form(
+            key: _formKey,
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                _buildSelectionCard(),
+                const SizedBox(height: 24),
+                Text('Performance Scores', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                const SizedBox(height: 16),
+                _buildScoreCard(),
+                const SizedBox(height: 24),
+                Text('Conclusion', style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+                const SizedBox(height: 16),
+                _buildConclusionCard(),
+                const SizedBox(height: 32),
+                SizedBox(
+                  width: double.infinity,
+                  child: ElevatedButton(
+                    onPressed: _isLoading ? null : _save,
+                    style: ElevatedButton.styleFrom(
+                      backgroundColor: const Color(0xFF3B82F6),
+                      padding: const EdgeInsets.symmetric(vertical: 18),
+                      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                    ),
+                    child: _isLoading 
+                      ? const CircularProgressIndicator(color: Colors.white)
+                      : Text('Save Interview Results', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                   ),
-                  child: _isLoading 
-                    ? const CircularProgressIndicator(color: Colors.white)
-                    : Text('Save Interview Results', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
                 ),
-              ),
-              const SizedBox(height: 40),
-            ],
+                const SizedBox(height: 40),
+              ],
+            ),
           ),
         ),
       ),
@@ -113,6 +118,7 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
             hint: Text('Select Student', style: GoogleFonts.inter()),
             items: _students.map((s) => DropdownMenuItem(value: s.id, child: Text(s.name))).toList(),
             onChanged: (v) => setState(() => _selectedStudent = v),
+            validator: (v) => v == null ? 'Please select a student' : null,
             decoration: InputDecoration(
               labelText: 'Student',
               prefixIcon: const Icon(Icons.person_outline, color: Color(0xFF3B82F6)),
@@ -190,9 +196,10 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
       ),
       child: Column(
         children: [
-          TextField(
+          TextFormField(
             controller: _feedbackCtrl,
             maxLines: 3,
+            validator: (v) => v == null || v.isEmpty ? 'Please provide feedback' : null,
             decoration: InputDecoration(
               hintText: 'Detailed feedback...',
               labelText: 'Feedback & Comments',
@@ -208,6 +215,7 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
               DropdownMenuItem(value: 'not_ready', child: Text('❌ Not Ready')),
             ],
             onChanged: (v) => setState(() => _status = v!),
+            validator: (v) => v == null ? 'Required' : null,
             decoration: InputDecoration(
               labelText: 'Final Verdict',
               border: OutlineInputBorder(borderRadius: BorderRadius.circular(12)),
@@ -219,7 +227,7 @@ class _AddMockInterviewPageState extends State<AddMockInterviewPage> {
   }
 
   Future<void> _save() async {
-    if (_selectedStudent == null) return;
+    if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
 
     try {

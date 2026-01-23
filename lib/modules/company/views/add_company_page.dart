@@ -65,7 +65,12 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                 _buildSectionTitle('Company Information'),
                 const SizedBox(height: 16),
                 _buildCard([
-                  _textField(_nameCtrl, 'Company Name', Icons.business),
+                  _textField(
+                    _nameCtrl, 
+                    'Company Name', 
+                    Icons.business, 
+                    validator: (v) => v == null || v.isEmpty ? 'Company Name is required' : null
+                  ),
                   _textField(_roleCtrl, 'Hiring Roles (comma separated)', Icons.work_outline),
                 ]),
                 const SizedBox(height: 24),
@@ -74,8 +79,30 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
                 _buildCard([
                   _textField(_hrCtrl, 'HR Manager Name', Icons.person_outline),
                   _textField(_hrDesignationCtrl, 'HR Designation', Icons.badge_outlined),
-                  _textField(_emailCtrl, 'HR Email', Icons.email_outlined, keyboard: TextInputType.emailAddress),
-                  _textField(_phoneCtrl, 'HR Phone', Icons.phone_outlined, keyboard: TextInputType.phone),
+                  _textField(
+                    _emailCtrl, 
+                    'HR Email', 
+                    Icons.email_outlined, 
+                    keyboard: TextInputType.emailAddress,
+                    validator: (v) {
+                      if (v != null && v.isNotEmpty && !RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) {
+                        return 'Invalid email address';
+                      }
+                      return null;
+                    }
+                  ),
+                  _textField(
+                    _phoneCtrl, 
+                    'HR Phone', 
+                    Icons.phone_outlined, 
+                    keyboard: TextInputType.phone,
+                    validator: (v) {
+                      if (v != null && v.isNotEmpty && v.length < 10) {
+                        return 'Phone number too short';
+                      }
+                      return null;
+                    }
+                  ),
                   _textField(_linkedinCtrl, 'LinkedIn Profile URL', Icons.link_outlined),
                 ]),
                 const SizedBox(height: 24),
@@ -157,13 +184,19 @@ class _AddCompanyPageState extends State<AddCompanyPage> {
     );
   }
 
-  Widget _textField(TextEditingController c, String label, IconData icon, {TextInputType keyboard = TextInputType.text}) {
+  Widget _textField(
+    TextEditingController c, 
+    String label, 
+    IconData icon, 
+    {TextInputType keyboard = TextInputType.text,
+    String? Function(String?)? validator}
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 12),
       child: TextFormField(
         controller: c,
         keyboardType: keyboard,
-        validator: (v) => label == 'Company Name' && (v == null || v.isEmpty) ? 'Required' : null,
+        validator: validator ?? ((v) => (label == 'Company Name' && (v == null || v.isEmpty)) ? 'Required' : null),
         decoration: InputDecoration(
           labelText: label,
           prefixIcon: Icon(icon, color: const Color(0xFF64748B)),

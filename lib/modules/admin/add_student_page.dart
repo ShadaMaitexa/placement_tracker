@@ -96,8 +96,28 @@ class _AddStudentPageState extends State<AddStudentPage> {
                   children: [
                     _buildSectionCard([
                        _textField(nameCtrl, 'Full Name', Icons.person_outline),
-                       _textField(emailCtrl, 'Email Address', Icons.email_outlined, keyboard: TextInputType.emailAddress),
-                       _textField(phoneCtrl, 'Phone Number', Icons.phone_outlined, keyboard: TextInputType.phone),
+                       _textField(
+                         emailCtrl, 
+                         'Email Address', 
+                         Icons.email_outlined, 
+                         keyboard: TextInputType.emailAddress,
+                         validator: (v) {
+                            if (v == null || v.isEmpty) return 'Required';
+                            if (!RegExp(r'^[\w-\.]+@([\w-]+\.)+[\w-]{2,4}$').hasMatch(v)) return 'Invalid email';
+                            return null;
+                         }
+                       ),
+                       _textField(
+                         phoneCtrl, 
+                         'Phone Number', 
+                         Icons.phone_outlined, 
+                         keyboard: TextInputType.phone,
+                         validator: (v) {
+                            if (v == null || v.isEmpty) return 'Required';
+                            if (v.length < 10) return 'Enter valid phone number';
+                            return null;
+                         }
+                       ),
                     ]),
                     
                     const SizedBox(height: 24),
@@ -115,7 +135,18 @@ class _AddStudentPageState extends State<AddStudentPage> {
                        _textField(qualificationCtrl, 'Qualification', Icons.history_edu_outlined),
                        Row(
                          children: [
-                           Expanded(child: _textField(passingYearCtrl, 'Passing Year', Icons.calendar_today_outlined, keyboard: TextInputType.number)),
+                           Expanded(child: _textField(
+                             passingYearCtrl, 
+                             'Passing Year', 
+                             Icons.calendar_today_outlined, 
+                             keyboard: TextInputType.number,
+                             validator: (v) {
+                                if (v == null || v.isEmpty) return 'Required';
+                                final year = int.tryParse(v);
+                                if (year == null || year < 1900 || year > 2100) return 'Invalid year';
+                                return null;
+                             }
+                           )),
                            const SizedBox(width: 12),
                            Expanded(child: _textField(batchCtrl, 'Batch (e.g. 2024)', Icons.group_outlined)),
                          ],
@@ -243,13 +274,19 @@ class _AddStudentPageState extends State<AddStudentPage> {
     );
   }
 
-  Widget _textField(TextEditingController c, String label, IconData icon, {TextInputType keyboard = TextInputType.text}) {
+  Widget _textField(
+    TextEditingController c, 
+    String label, 
+    IconData icon, 
+    {TextInputType keyboard = TextInputType.text,
+    String? Function(String?)? validator}
+  ) {
     return Padding(
       padding: const EdgeInsets.only(bottom: 16),
       child: TextFormField(
         controller: c,
         keyboardType: keyboard,
-        validator: (v) => v == null || v.isEmpty ? 'Required' : null,
+        validator: validator ?? (v) => v == null || v.isEmpty ? 'Required' : null,
         style: GoogleFonts.inter(color: const Color(0xFF0F172A)),
         decoration: InputDecoration(
           labelText: label,
