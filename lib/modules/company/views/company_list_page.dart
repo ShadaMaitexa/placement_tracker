@@ -161,10 +161,6 @@ class _CompanyListPageState extends State<CompanyListPage> {
                             company.name,
                             style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
                           ),
-                          Text(
-                            company.location ?? 'Global',
-                            style: GoogleFonts.inter(fontSize: 12, color: Colors.white60),
-                          ),
                         ],
                       ),
                     ),

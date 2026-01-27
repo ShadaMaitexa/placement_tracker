@@ -111,7 +111,7 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
       if (widget.drive == null) {
         await _placementService.addPlacementDrive(newDrive);
       } else {
-        await _placementService.updatePlacementDrive(newDrive); 
+        await _placementService.updateDrive(newDrive); 
       }
       
       if (mounted) Navigator.pop(context, true);

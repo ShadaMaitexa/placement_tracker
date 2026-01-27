@@ -393,7 +393,7 @@ class _ResultList extends StatelessWidget {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceAround,
                     children: [
-                      _miniInfo('Accuracy', '${res.accuracy.toInt()}%', Icons.track_changes_outlined, Colors.emerald),
+                      _miniInfo('Accuracy', '${res.accuracy.toInt()}%', Icons.track_changes_outlined, const Color(0xFF10B981)),
                       _miniInfo('Time Taken', '${res.timeTakenMinutes}m', Icons.timer_outlined, Colors.orange),
                       _miniInfo('Status', res.score >= (res.maxScore * 0.4) ? 'PASS' : 'FAIL', Icons.verified_outlined, 
                         res.score >= (res.maxScore * 0.4) ? Colors.blue : Colors.red),

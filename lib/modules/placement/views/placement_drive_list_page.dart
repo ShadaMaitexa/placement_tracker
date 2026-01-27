@@ -189,7 +189,7 @@ class _PlacementDriveListPageState extends State<PlacementDriveListPage> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Text('PACKAGE', style: GoogleFonts.inter(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.bold)),
-                  Text(drive.salaryPackage ?? 'N/A', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.emerald)),
+                  Text(drive.salaryPackage ?? 'N/A', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: const Color(0xFF10B981))),
                 ],
               ),
               if (_userRole == 'student')
