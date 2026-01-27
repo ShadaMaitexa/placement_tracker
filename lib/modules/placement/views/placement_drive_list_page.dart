@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
+import 'package:google_fonts/google_fonts.dart';
 import 'package:placement_tracker/core/services/auth_service.dart';
 import 'package:placement_tracker/core/services/placement_service.dart';
 import 'package:placement_tracker/core/services/student_service.dart';
+import 'package:placement_tracker/core/utils/responsive.dart';
 import 'package:placement_tracker/modules/placement/models/placement_drive.dart';
 import 'add_placement_drive_page.dart';
 
@@ -46,10 +48,9 @@ class _PlacementDriveListPageState extends State<PlacementDriveListPage> {
         _drives = await _placementService.getAllPlacementDrives();
       }
     } catch (e) {
-      if (mounted)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -62,64 +63,164 @@ class _PlacementDriveListPageState extends State<PlacementDriveListPage> {
       setState(() {
         _appliedDriveIds.add(driveId);
       });
-      if (mounted)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text('Applied successfully!')));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Applied successfully!')));
+      }
     } catch (e) {
-      if (mounted)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Placement Drives'),
-        actions: [
-          if (_userRole == 'placement_officer')
-            IconButton(
-              icon: Icon(Icons.add),
-              onPressed: () async {
-                await Navigator.push(
-                  context,
-                  MaterialPageRoute(
-                    builder: (_) => const AddPlacementDrivePage(),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text('Placement Drives', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+          elevation: 0,
+        ),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 1200),
+            child: _isLoading
+                ? const Center(child: CircularProgressIndicator(color: Colors.white))
+                : _drives.isEmpty 
+                  ? _buildEmptyState()
+                  : CustomScrollView(
+                      slivers: [
+                        SliverPadding(
+                          padding: EdgeInsets.all(context.responsive(16.0, tablet: 24.0)),
+                          sliver: SliverGrid(
+                            gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                              crossAxisCount: context.responsive(1, tablet: 2, desktop: 3),
+                              crossAxisSpacing: 16,
+                              mainAxisSpacing: 16,
+                              childAspectRatio: context.responsive(1.5, tablet: 1.4, desktop: 1.3),
+                            ),
+                            delegate: SliverChildBuilderDelegate(
+                              (context, index) {
+                                final drive = _drives[index];
+                                return _buildDriveCard(drive);
+                              },
+                              childCount: _drives.length,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+          ),
+        ),
+        floatingActionButton: _userRole == 'placement_officer'
+            ? FloatingActionButton.extended(
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(builder: (_) => const AddPlacementDrivePage()),
+                  );
+                  _initData();
+                },
+                backgroundColor: const Color(0xFF3B82F6),
+                icon: const Icon(Icons.add),
+                label: Text('New Drive', style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+              )
+            : null,
+      ),
+    );
+  }
+
+  Widget _buildDriveCard(PlacementDrive drive) {
+    final hasApplied = _appliedDriveIds.contains(drive.id);
+    return Container(
+      padding: const EdgeInsets.all(20),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(24),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: [
+              Container(
+                padding: const EdgeInsets.all(10),
+                decoration: BoxDecoration(
+                  color: Colors.blue.withValues(alpha: 0.1),
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: const Icon(Icons.business, color: Colors.blue, size: 24),
+              ),
+              const SizedBox(width: 12),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Text(drive.companyName ?? 'Unknown Company', 
+                      style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white)),
+                    Text(drive.location ?? 'Remote', 
+                      style: GoogleFonts.inter(fontSize: 12, color: Colors.white60)),
+                  ],
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 16),
+          Text(drive.title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white)),
+          const SizedBox(height: 4),
+          Text(drive.jobRole, style: GoogleFonts.inter(fontSize: 14, color: Colors.white70)),
+          const Spacer(),
+          const Divider(color: Colors.white10),
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('PACKAGE', style: GoogleFonts.inter(fontSize: 10, color: Colors.white38, fontWeight: FontWeight.bold)),
+                  Text(drive.salaryPackage ?? 'N/A', style: GoogleFonts.outfit(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.emerald)),
+                ],
+              ),
+              if (_userRole == 'student')
+                ElevatedButton(
+                  onPressed: hasApplied ? null : () => _applyToDrive(drive.id!),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: hasApplied ? Colors.white10 : Colors.white,
+                    foregroundColor: hasApplied ? Colors.white38 : const Color(0xFF0F172A),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                    padding: const EdgeInsets.symmetric(horizontal: 20),
                   ),
-                );
-                _initData(); // Refresh the list
-              },
-            ),
+                  child: Text(hasApplied ? 'Applied' : 'Apply'),
+                ),
+            ],
+          ),
         ],
       ),
-      body: _isLoading
-          ? Center(child: CircularProgressIndicator())
-          : ListView.builder(
-              itemCount: _drives.length,
-              itemBuilder: (context, index) {
-                final drive = _drives[index];
-                final hasApplied = _appliedDriveIds.contains(drive.id);
-                return Card(
-                  child: ListTile(
-                    title: Text(drive.title),
-                    subtitle: Text(
-                      'Role: ${drive.jobRole}\nCompany: ${drive.companyName ?? 'Unknown'}',
-                    ),
-                    trailing: _userRole == 'student' && !hasApplied
-                        ? ElevatedButton(
-                            onPressed: () => _applyToDrive(drive.id!),
-                            child: Text('Apply'),
-                          )
-                        : hasApplied
-                        ? Text('Applied')
-                        : null,
-                  ),
-                );
-              },
-            ),
+    );
+  }
+
+  Widget _buildEmptyState() {
+    return Center(
+      child: Column(
+        mainAxisAlignment: MainAxisAlignment.center,
+        children: [
+          Icon(Icons.campaign_outlined, size: 64, color: Colors.white10),
+          const SizedBox(height: 16),
+          Text('No Placement Drives Active', style: GoogleFonts.inter(color: Colors.white60, fontSize: 16)),
+        ],
+      ),
     );
   }
 }
+

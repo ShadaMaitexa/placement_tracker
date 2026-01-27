@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:placement_tracker/core/services/company_service.dart';
+import 'package:placement_tracker/core/utils/responsive.dart';
 import 'package:placement_tracker/modules/company/models/company.dart';
 import 'add_company_page.dart';
 
@@ -76,101 +77,136 @@ class _CompanyListPageState extends State<CompanyListPage> {
         ),
         icon: const Icon(Icons.add),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : _companies.isEmpty
-          ? _buildEmptyState()
-          : ListView.builder(
-              padding: const EdgeInsets.all(16),
-              itemCount: _companies.length,
-              itemBuilder: (context, index) {
-                final company = _companies[index];
-                return _buildCompanyCard(company);
-              },
-            ),
+      body: Center(
+        child: ConstrainedBox(
+          constraints: const BoxConstraints(maxWidth: 1200),
+          child: _isLoading
+              ? const Center(child: CircularProgressIndicator(color: Colors.white))
+              : _companies.isEmpty
+              ? _buildEmptyState()
+              : CustomScrollView(
+                  slivers: [
+                    SliverPadding(
+                      padding: EdgeInsets.all(context.responsive(16.0, tablet: 24.0)),
+                      sliver: SliverGrid(
+                        gridDelegate: SliverGridDelegateWithFixedCrossAxisCount(
+                          crossAxisCount: context.responsive(1, tablet: 2, desktop: 3),
+                          crossAxisSpacing: 16,
+                          mainAxisSpacing: 16,
+                          childAspectRatio: context.responsive(2.2, tablet: 2.0, desktop: 1.8),
+                        ),
+                        delegate: SliverChildBuilderDelegate(
+                          (context, index) => _buildCompanyCard(_companies[index]),
+                          childCount: _companies.length,
+                        ),
+                      ),
+                    ),
+                    const SliverToBoxAdapter(child: SizedBox(height: 80)),
+                  ],
+                ),
+        ),
+      ),
       ),
     );
   }
 
   Widget _buildCompanyCard(Company company) {
     return Container(
-      margin: const EdgeInsets.only(bottom: 16),
       decoration: BoxDecoration(
         color: Colors.white.withValues(alpha: 0.05),
-        borderRadius: BorderRadius.circular(16),
+        borderRadius: BorderRadius.circular(24),
         border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
-      child: ListTile(
-        contentPadding: const EdgeInsets.all(16),
-        leading: Container(
-          width: 50,
-          height: 50,
-          decoration: BoxDecoration(
-            color: const Color(0xFF10B981).withValues(alpha: 0.1),
-            borderRadius: BorderRadius.circular(12),
-          ),
-          alignment: Alignment.center,
-          child: Text(
-            company.name.isNotEmpty ? company.name[0].toUpperCase() : '?',
-            style: GoogleFonts.outfit(
-              fontWeight: FontWeight.bold,
-              fontSize: 24,
-              color: const Color(0xFF10B981),
-            ),
-          ),
-        ),
-        title: Text(
-          company.name,
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
-        ),
-        subtitle: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const SizedBox(height: 4),
-            Text(
-              '${company.hrName ?? "No HR Contact"} • ${company.hrDesignation ?? "Company"}',
-              style: GoogleFonts.inter(
-                fontSize: 13,
-                color: Colors.white70,
-              ),
-            ),
-            const SizedBox(height: 8),
-            if (company.hiringRoles != null && company.hiringRoles!.isNotEmpty)
-              Wrap(
-                spacing: 6,
-                children: company.hiringRoles!
-                    .take(3)
-                    .map(
-                      (role) => Container(
-                        padding: const EdgeInsets.symmetric(
-                          horizontal: 8,
-                          vertical: 2,
-                        ),
-                        decoration: BoxDecoration(
-                          color: const Color(0xFFF1F5F9),
-                          borderRadius: BorderRadius.circular(4),
-                        ),
-                        child: Text(
-                          role,
-                          style: GoogleFonts.inter(
-                            fontSize: 10,
-                            color: const Color(0xFF475569),
-                          ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () async {
+            final res = await Navigator.push(
+              context,
+              MaterialPageRoute(builder: (_) => AddCompanyPage(company: company)),
+            );
+            if (res == true) _loadCompanies();
+          },
+          borderRadius: BorderRadius.circular(24),
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  children: [
+                    Container(
+                      width: 50,
+                      height: 50,
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF10B981).withValues(alpha: 0.1),
+                        borderRadius: BorderRadius.circular(12),
+                      ),
+                      alignment: Alignment.center,
+                      child: Text(
+                        company.name.isNotEmpty ? company.name[0].toUpperCase() : '?',
+                        style: GoogleFonts.outfit(
+                          fontWeight: FontWeight.bold,
+                          fontSize: 24,
+                          color: const Color(0xFF10B981),
                         ),
                       ),
-                    )
-                    .toList(),
-              ),
-          ],
+                    ),
+                    const SizedBox(width: 16),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Text(
+                            company.name,
+                            style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white),
+                          ),
+                          Text(
+                            company.location ?? 'Global',
+                            style: GoogleFonts.inter(fontSize: 12, color: Colors.white60),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 20),
+                Row(
+                  children: [
+                    const Icon(Icons.person_outline, size: 14, color: Colors.white38),
+                    const SizedBox(width: 6),
+                    Text(
+                      company.hrName ?? "No HR Contact",
+                      style: GoogleFonts.inter(fontSize: 13, color: Colors.white70),
+                    ),
+                  ],
+                ),
+                const Spacer(),
+                if (company.hiringRoles != null && company.hiringRoles!.isNotEmpty)
+                  Wrap(
+                    spacing: 6,
+                    runSpacing: 6,
+                    children: company.hiringRoles!
+                        .take(3)
+                        .map(
+                          (role) => Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: Colors.blue.withValues(alpha: 0.1),
+                              borderRadius: BorderRadius.circular(6),
+                            ),
+                            child: Text(
+                              role,
+                              style: GoogleFonts.inter(fontSize: 10, color: Colors.blue, fontWeight: FontWeight.bold),
+                            ),
+                          ),
+                        )
+                        .toList(),
+                  ),
+              ],
+            ),
+          ),
         ),
-        trailing: const Icon(Icons.chevron_right),
-        onTap: () async {
-          final res = await Navigator.push(
-            context,
-            MaterialPageRoute(builder: (_) => AddCompanyPage(company: company)),
-          );
-          if (res == true) _loadCompanies();
-        },
       ),
     );
   }
@@ -180,7 +216,7 @@ class _CompanyListPageState extends State<CompanyListPage> {
       child: Column(
         mainAxisAlignment: MainAxisAlignment.center,
         children: [
-          Icon(Icons.business_outlined, size: 64, color: Colors.grey[300]),
+          Icon(Icons.business_outlined, size: 64, color: Colors.white10),
           const SizedBox(height: 16),
           Text(
             'No companies registered',
@@ -191,3 +227,4 @@ class _CompanyListPageState extends State<CompanyListPage> {
     );
   }
 }
+

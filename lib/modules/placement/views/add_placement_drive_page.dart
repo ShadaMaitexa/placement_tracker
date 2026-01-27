@@ -1,7 +1,9 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:placement_tracker/core/services/company_service.dart';
 import 'package:placement_tracker/core/services/placement_service.dart';
+import 'package:placement_tracker/core/utils/responsive.dart';
 import 'package:placement_tracker/modules/company/models/company.dart';
 import 'package:placement_tracker/modules/placement/models/placement_drive.dart';
 
@@ -58,10 +60,9 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
     try {
       _companies = await _companyService.getAllCompanies();
     } catch (e) {
-      if (mounted)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -115,10 +116,9 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
       
       if (mounted) Navigator.pop(context, true);
     } catch (e) {
-      if (mounted)
-        ScaffoldMessenger.of(
-          context,
-        ).showSnackBar(SnackBar(content: Text(e.toString())));
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
+      }
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -126,79 +126,92 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text(widget.drive == null ? 'Add Placement Drive' : 'Edit Drive', 
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
-      body: _isLoading
-          ? const Center(child: CircularProgressIndicator())
-          : SingleChildScrollView(
-              padding: const EdgeInsets.all(20.0),
-              child: Form(
-                key: _formKey,
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.start,
-                  children: [
-                    _buildSectionTitle('Drive Details'),
-                    const SizedBox(height: 16),
-                    _buildCard([
-                       _buildCompanyDropdown(),
-                       _buildTextField(_titleCtrl, 'Drive Title', Icons.title, validator: (v) => v!.isEmpty ? 'Required' : null),
-                       _buildTextField(_roleCtrl, 'Job Role', Icons.work_outline, validator: (v) => v!.isEmpty ? 'Required' : null),
-                       _buildTextField(_salaryCtrl, 'Salary Package (CTC)', Icons.currency_rupee, validator: (v) => v!.isEmpty ? 'Required' : null),
-                       _buildTextField(_locationCtrl, 'Job Location', Icons.location_on_outlined, validator: (v) => v!.isEmpty ? 'Required' : null),
-                    ]),
-                    
-                    const SizedBox(height: 24),
-                    _buildSectionTitle('Process & Dates'),
-                    const SizedBox(height: 16),
-                    _buildCard([
-                      _buildDatePicker('Drive Date', _driveDate, (d) => setState(() => _driveDate = d)),
-                      const Divider(height: 1),
-                      _buildDatePicker('Application Deadline', _deadlineDate, (d) => setState(() => _deadlineDate = d)),
-                      const Divider(height: 1),
-                      _buildTextField(_eligibilityCtrl, 'Eligibility Criteria', Icons.check_circle_outline, maxLines: 3, validator: (v) => v!.isEmpty ? 'Required' : null),
-                       _buildTextField(_descCtrl, 'Description', Icons.description_outlined, maxLines: 5, validator: (v) => v!.isEmpty ? 'Required' : null),
-                    ]),
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(widget.drive == null ? 'Add Placement Drive' : 'Edit Drive', 
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+        ),
+        body: _isLoading
+            ? const Center(child: CircularProgressIndicator(color: Colors.white))
+            : Center(
+                child: ConstrainedBox(
+                  constraints: const BoxConstraints(maxWidth: 900),
+                  child: SingleChildScrollView(
+                    padding: EdgeInsets.all(context.responsive(20.0, tablet: 40.0)),
+                    child: Form(
+                      key: _formKey,
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          _buildSectionTitle('Drive Details'),
+                          const SizedBox(height: 16),
+                          _buildCard([
+                             _buildCompanyDropdown(),
+                             _buildTextField(_titleCtrl, 'Drive Title', Icons.title, validator: (v) => v!.isEmpty ? 'Required' : null),
+                             _buildTextField(_roleCtrl, 'Job Role', Icons.work_outline, validator: (v) => v!.isEmpty ? 'Required' : null),
+                             _buildTextField(_salaryCtrl, 'Salary Package (CTC)', Icons.currency_rupee, validator: (v) => v!.isEmpty ? 'Required' : null),
+                             _buildTextField(_locationCtrl, 'Job Location', Icons.location_on_outlined, validator: (v) => v!.isEmpty ? 'Required' : null),
+                          ]),
+                          
+                          const SizedBox(height: 24),
+                          _buildSectionTitle('Process & Dates'),
+                          const SizedBox(height: 16),
+                          _buildCard([
+                            _buildDatePicker('Drive Date', _driveDate, (d) => setState(() => _driveDate = d)),
+                            const Divider(color: Colors.white10),
+                            _buildDatePicker('Application Deadline', _deadlineDate, (d) => setState(() => _deadlineDate = d)),
+                            _buildTextField(_eligibilityCtrl, 'Eligibility Criteria', Icons.check_circle_outline, maxLines: 3, validator: (v) => v!.isEmpty ? 'Required' : null),
+                             _buildTextField(_descCtrl, 'Description', Icons.description_outlined, maxLines: 5, validator: (v) => v!.isEmpty ? 'Required' : null),
+                          ]),
 
-                    const SizedBox(height: 32),
-                    SizedBox(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: _submit, 
-                        style: ElevatedButton.styleFrom(
-                           backgroundColor: const Color(0xFF3B82F6),
-                           foregroundColor: Colors.white,
-                           padding: const EdgeInsets.symmetric(vertical: 16),
-                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-                        ),
-                        child: Text('Save Placement Drive', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                          const SizedBox(height: 40),
+                          SizedBox(
+                            width: double.infinity,
+                            child: ElevatedButton(
+                              onPressed: _submit, 
+                              style: ElevatedButton.styleFrom(
+                                 backgroundColor: Colors.white,
+                                 foregroundColor: const Color(0xFF0F172A),
+                                 padding: const EdgeInsets.symmetric(vertical: 18),
+                                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+                              ),
+                              child: Text('Save Placement Drive', style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
+                            ),
+                          ),
+                          const SizedBox(height: 40),
+                        ],
                       ),
                     ),
-                    const SizedBox(height: 40),
-                  ],
+                  ),
                 ),
               ),
-            ),
+      ),
     );
   }
 
   Widget _buildSectionTitle(String title) {
-    return Text(title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: const Color(0xFF1E293B)));
+    return Text(title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white));
   }
 
   Widget _buildCard(List<Widget> children) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(children: children),
     );
@@ -206,19 +219,27 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
 
   Widget _buildTextField(TextEditingController c, String label, IconData icon, {int maxLines = 1, String? Function(String?)? validator}) {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12, top: 8),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: TextFormField(
         controller: c,
         maxLines: maxLines,
         validator: validator,
-        style: GoogleFonts.inter(color: const Color(0xFF0F172A)),
+        style: GoogleFonts.inter(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: GoogleFonts.inter(color: const Color(0xFF64748B)),
-          prefixIcon: Icon(icon, color: const Color(0xFF64748B)),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
-          enabledBorder: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          labelStyle: GoogleFonts.inter(color: Colors.white60),
+          prefixIcon: Icon(icon, color: Colors.white60, size: 20),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.blue),
+          ),
+          filled: true,
+          fillColor: Colors.white.withValues(alpha: 0.02),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
       ),
     );
@@ -226,20 +247,30 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
 
   Widget _buildCompanyDropdown() {
     return Padding(
-      padding: const EdgeInsets.only(bottom: 12, top: 4),
+      padding: const EdgeInsets.symmetric(vertical: 8),
       child: DropdownButtonFormField<String>(
         value: _selectedCompanyId,
+        dropdownColor: const Color(0xFF1E293B),
         decoration: InputDecoration(
           labelText: 'Select Company',
-          labelStyle: GoogleFonts.inter(color: const Color(0xFF64748B)),
-          prefixIcon: const Icon(Icons.business, color: Color(0xFF64748B)),
-          border: OutlineInputBorder(borderRadius: BorderRadius.circular(8), borderSide: BorderSide(color: Colors.grey[300]!)),
-          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
+          labelStyle: GoogleFonts.inter(color: Colors.white60),
+          prefixIcon: const Icon(Icons.business, color: Colors.white60, size: 20),
+          enabledBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.blue),
+          ),
+          filled: true,
+          fillColor: Colors.white.withValues(alpha: 0.02),
+          contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
         items: _companies.map((company) {
           return DropdownMenuItem<String>(
             value: company.id,
-            child: Text(company.name, style: GoogleFonts.inter(color: const Color(0xFF0F172A))),
+            child: Text(company.name, style: GoogleFonts.inter(color: Colors.white)),
           );
         }).toList(),
         onChanged: (value) => setState(() => _selectedCompanyId = value),
@@ -251,11 +282,18 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
   Widget _buildDatePicker(String label, DateTime? date, ValueChanged<DateTime?> onDateSelected) {
     return ListTile(
       contentPadding: EdgeInsets.zero,
-      leading: const Icon(Icons.calendar_today, color: Color(0xFF64748B)),
-      title: Text(label, style: GoogleFonts.inter(fontSize: 14, color: const Color(0xFF64748B))),
+      leading: Container(
+        padding: const EdgeInsets.all(8),
+        decoration: BoxDecoration(
+          color: Colors.blue.withValues(alpha: 0.1),
+          borderRadius: BorderRadius.circular(8),
+        ),
+        child: const Icon(Icons.calendar_today, color: Colors.blue, size: 18),
+      ),
+      title: Text(label, style: GoogleFonts.inter(fontSize: 12, color: Colors.white60)),
       subtitle: Text(
         date == null ? 'Select Date' : '${date.day}/${date.month}/${date.year}',
-        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: const Color(0xFF0F172A)),
+        style: GoogleFonts.inter(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
       ),
       onTap: () async {
         final picked = await showDatePicker(
@@ -269,3 +307,4 @@ class _AddPlacementDrivePageState extends State<AddPlacementDrivePage> {
     );
   }
 }
+

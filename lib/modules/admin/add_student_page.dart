@@ -1,6 +1,8 @@
+import 'dart:ui';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:placement_tracker/core/services/student_service.dart';
+import 'package:placement_tracker/core/utils/responsive.dart';
 import 'package:placement_tracker/modules/student/models/student_model.dart';
 
 class AddStudentPage extends StatefulWidget {
@@ -66,34 +68,35 @@ class _AddStudentPageState extends State<AddStudentPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFFF8FAFC),
-      appBar: AppBar(
-        title: Text(widget.student == null ? 'Add Student' : 'Edit Student', 
-          style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
-        elevation: 0,
-        backgroundColor: Colors.white,
-        foregroundColor: const Color(0xFF0F172A),
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0F172A), Color(0xFF1E293B), Color(0xFF334155)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
       ),
-      body: SingleChildScrollView(
-        child: Padding(
-          padding: const EdgeInsets.all(20),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Personal & Academic Details',
-                style: GoogleFonts.outfit(
-                  fontSize: 18,
-                  fontWeight: FontWeight.bold,
-                  color: const Color(0xFF1E293B),
-                ),
-              ),
-              const SizedBox(height: 16),
-              Form(
+      child: Scaffold(
+        backgroundColor: Colors.transparent,
+        appBar: AppBar(
+          title: Text(widget.student == null ? 'Add Student' : 'Edit Student', 
+            style: GoogleFonts.outfit(fontWeight: FontWeight.bold)),
+          elevation: 0,
+          backgroundColor: Colors.transparent,
+          foregroundColor: Colors.white,
+        ),
+        body: Center(
+          child: ConstrainedBox(
+            constraints: const BoxConstraints(maxWidth: 900),
+            child: SingleChildScrollView(
+              padding: EdgeInsets.all(context.responsive(20.0, tablet: 40.0)),
+              child: Form(
                 key: _formKey,
                 child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
+                    _buildSectionTitle('Personal & Academic Details'),
+                    const SizedBox(height: 16),
                     _buildSectionCard([
                        _textField(nameCtrl, 'Full Name', Icons.person_outline),
                        _textField(
@@ -121,14 +124,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
                     ]),
                     
                     const SizedBox(height: 24),
-                    Text(
-                      'College & Course Details',
-                      style: GoogleFonts.outfit(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1E293B),
-                      ),
-                    ),
+                    _buildSectionTitle('College & Course Details'),
                     const SizedBox(height: 16),
                     _buildSectionCard([
                        _textField(collegeCtrl, 'College Name', Icons.school_outlined),
@@ -169,14 +165,7 @@ class _AddStudentPageState extends State<AddStudentPage> {
                     ),
 
                     const SizedBox(height: 24),
-                    Text(
-                      'Skills & Placement Status',
-                      style: GoogleFonts.outfit(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                        color: const Color(0xFF1E293B),
-                      ),
-                    ),
+                    _buildSectionTitle('Skills & Placement Status'),
                     const SizedBox(height: 16),
                     _buildSectionCard([
                        _textField(skillsCtrl, 'Skills (comma separated)', Icons.bolt_outlined),
@@ -196,20 +185,20 @@ class _AddStudentPageState extends State<AddStudentPage> {
                       onChanged: (v) => setState(() => eligibilityStatus = v!),
                     ),
 
-                    const SizedBox(height: 32),
+                    const SizedBox(height: 40),
                     SizedBox(
                       width: double.infinity,
                       child: ElevatedButton(
                         onPressed: _isLoading ? null : _saveStudent,
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: const Color(0xFF3B82F6),
-                          foregroundColor: Colors.white,
+                          backgroundColor: Colors.white,
+                          foregroundColor: const Color(0xFF0F172A),
                           padding: const EdgeInsets.symmetric(vertical: 18),
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
                           elevation: 0,
                         ),
                         child: _isLoading 
-                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Colors.white, strokeWidth: 2))
+                          ? const SizedBox(height: 20, width: 20, child: CircularProgressIndicator(color: Color(0xFF0F172A), strokeWidth: 2))
                           : Text(widget.student == null ? 'Save Student Profile' : 'Update Profile', 
                               style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold)),
                       ),
@@ -218,26 +207,25 @@ class _AddStudentPageState extends State<AddStudentPage> {
                   ],
                 ),
               ),
-            ],
+            ),
           ),
         ),
       ),
     );
   }
 
+  Widget _buildSectionTitle(String title) {
+    return Text(title, style: GoogleFonts.outfit(fontSize: 18, fontWeight: FontWeight.bold, color: Colors.white));
+  }
+
   Widget _buildSectionCard(List<Widget> children) {
     return Container(
-      padding: const EdgeInsets.all(16),
+      padding: const EdgeInsets.all(20),
+      margin: const EdgeInsets.only(bottom: 8),
       decoration: BoxDecoration(
-        color: Colors.white,
-        borderRadius: BorderRadius.circular(16),
-        boxShadow: [
-          BoxShadow(
-            color: Colors.black.withValues(alpha: 0.05),
-            blurRadius: 10,
-            offset: const Offset(0, 4),
-          ),
-        ],
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(20),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(children: children),
     );
@@ -251,23 +239,24 @@ class _AddStudentPageState extends State<AddStudentPage> {
     required ValueChanged<String?> onChanged,
   }) {
     return Container(
-      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        border: Border.all(color: const Color(0xFFE2E8F0)),
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: DropdownButtonFormField<String>(
         value: value,
+        dropdownColor: const Color(0xFF1E293B),
         items: items.map((item) => DropdownMenuItem(
           value: item['value'], 
-          child: Text(item['label']!, style: GoogleFonts.inter())
+          child: Text(item['label']!, style: GoogleFonts.inter(color: Colors.white))
         )).toList(),
         onChanged: onChanged,
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: GoogleFonts.inter(color: const Color(0xFF64748B)),
-          prefixIcon: Icon(icon, color: const Color(0xFF3B82F6)),
+          labelStyle: GoogleFonts.inter(color: Colors.white60),
+          prefixIcon: Icon(icon, color: Colors.blue, size: 20),
           border: InputBorder.none,
         ),
       ),
@@ -287,16 +276,20 @@ class _AddStudentPageState extends State<AddStudentPage> {
         controller: c,
         keyboardType: keyboard,
         validator: validator ?? (v) => v == null || v.isEmpty ? 'Required' : null,
-        style: GoogleFonts.inter(color: const Color(0xFF0F172A)),
+        style: GoogleFonts.inter(color: Colors.white),
         decoration: InputDecoration(
           labelText: label,
-          labelStyle: GoogleFonts.inter(color: const Color(0xFF64748B)),
-          prefixIcon: Icon(icon, color: const Color(0xFF64748B).withValues(alpha: 0.7)),
+          labelStyle: GoogleFonts.inter(color: Colors.white60),
+          prefixIcon: Icon(icon, color: Colors.white60, size: 20),
           filled: true,
-          fillColor: const Color(0xFFF1F5F9).withValues(alpha: 0.5),
-          border: OutlineInputBorder(
+          fillColor: Colors.white.withValues(alpha: 0.02),
+          enabledBorder: OutlineInputBorder(
             borderRadius: BorderRadius.circular(12),
-            borderSide: BorderSide.none,
+            borderSide: BorderSide(color: Colors.white.withValues(alpha: 0.1)),
+          ),
+          focusedBorder: OutlineInputBorder(
+            borderRadius: BorderRadius.circular(12),
+            borderSide: const BorderSide(color: Colors.blue),
           ),
           contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 16),
         ),
@@ -351,3 +344,4 @@ class _AddStudentPageState extends State<AddStudentPage> {
     }
   }
 }
+
