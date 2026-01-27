@@ -278,8 +278,8 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             Column(
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                Text(val, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18)),
-                Text(label, style: GoogleFonts.inter(fontSize: 11, color: Colors.grey)),
+                Text(val, style: GoogleFonts.outfit(fontWeight: FontWeight.bold, fontSize: 18, color: Colors.white)),
+                Text(label, style: GoogleFonts.inter(fontSize: 11, color: Colors.white60)),
               ],
             )
           ],
@@ -299,9 +299,9 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
     return Container(
       padding: const EdgeInsets.all(16),
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Colors.white.withValues(alpha: 0.05),
         borderRadius: BorderRadius.circular(16),
-        boxShadow: [BoxShadow(color: Colors.black.withValues(alpha: 0.05), blurRadius: 10)],
+        border: Border.all(color: Colors.white.withValues(alpha: 0.1)),
       ),
       child: Column(children: rows),
     );
@@ -347,10 +347,11 @@ class _StudentDetailPageState extends State<StudentDetailPage> {
             children: skills.map((s) => Container(
               padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
               decoration: BoxDecoration(
-                color: const Color(0xFFF1F5F9),
+                color: Colors.blue.withValues(alpha: 0.1),
                 borderRadius: BorderRadius.circular(8),
+                border: Border.all(color: Colors.blue.withValues(alpha: 0.2)),
               ),
-              child: Text(s, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: const Color(0xFF475569))),
+              child: Text(s, style: GoogleFonts.inter(fontSize: 12, fontWeight: FontWeight.w500, color: Colors.blue[300])),
             )).toList(),
           ),
     );

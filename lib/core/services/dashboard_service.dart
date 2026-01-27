@@ -6,21 +6,25 @@ class DashboardService {
 
   Future<Map<String, dynamic>> getAdminStats() async {
     try {
-      // Fetch counts in parallel
-      final results = await Future.wait([
-        _client.from('students').count(CountOption.exact),
-        _client.from('students').count(CountOption.exact).eq('eligibility_status', 'ready'),
-        _client.from('companies').count(CountOption.exact),
-        _client.from('placement_drives').count(CountOption.exact).eq('status', 'upcoming'),
-        _client.from('placement_applications').count(CountOption.exact).eq('status', 'selected'),
-      ]);
+      final totalStudents = await _client.from('students').select('*', const FetchOptions(count: CountOption.exact, head: true));
+      final readyStudents = await _client.from('students').select('*', const FetchOptions(count: CountOption.exact, head: true)).eq('eligibility_status', 'ready');
+      final totalCompanies = await _client.from('companies').select('*', const FetchOptions(count: CountOption.exact, head: true));
+      
+      // Active drives: upcoming or ongoing
+      final activeDrives = await _client.from('placement_drives')
+          .select('*', const FetchOptions(count: CountOption.exact, head: true))
+          .or('status.eq.upcoming,status.eq.ongoing');
+          
+      final placedStudents = await _client.from('placement_applications')
+          .select('*', const FetchOptions(count: CountOption.exact, head: true))
+          .eq('status', 'selected');
 
       return {
-        'totalStudents': results[0],
-        'readyStudents': results[1],
-        'totalCompanies': results[2],
-        'activeDrives': results[3],
-        'placedStudents': results[4],
+        'totalStudents': totalStudents.count ?? 0,
+        'readyStudents': readyStudents.count ?? 0,
+        'totalCompanies': totalCompanies.count ?? 0,
+        'activeDrives': activeDrives.count ?? 0,
+        'placedStudents': placedStudents.count ?? 0,
       };
     } catch (e) {
       print('Error fetching admin stats: $e');

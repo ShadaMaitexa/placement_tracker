@@ -193,31 +193,46 @@ class _AdminHomeState extends State<AdminHome> {
                             title: 'Students',
                             icon: Icons.people_outline,
                             gradient: const LinearGradient(colors: [Color(0xFF3B82F6), Color(0xFF2563EB)]),
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentListPage())),
+                            onTap: () async {
+                              await Navigator.push(context, MaterialPageRoute(builder: (_) => const StudentListPage()));
+                              _loadStats();
+                            },
                           ),
                           _buildModuleItem(
                             title: 'Companies',
                             icon: Icons.business_outlined,
                             gradient: const LinearGradient(colors: [Color(0xFF10B981), Color(0xFF059669)]),
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const CompanyListPage())),
+                            onTap: () async {
+                              await Navigator.push(context, MaterialPageRoute(builder: (_) => const CompanyListPage()));
+                              _loadStats();
+                            },
                           ),
                           _buildModuleItem(
                             title: 'Placement Drives',
                             icon: Icons.work_outline,
                             gradient: const LinearGradient(colors: [Color(0xFFF59E0B), Color(0xFFD97706)]),
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const PlacementDriveListPage())),
+                            onTap: () async {
+                              await Navigator.push(context, MaterialPageRoute(builder: (_) => const PlacementDriveListPage()));
+                              _loadStats();
+                            },
                           ),
                           _buildModuleItem(
                             title: 'Aptitude Tests',
                             icon: Icons.quiz_outlined,
                             gradient: const LinearGradient(colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)]),
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const AptitudeTestListPage())),
+                            onTap: () async {
+                              await Navigator.push(context, MaterialPageRoute(builder: (_) => const AptitudeTestListPage()));
+                              _loadStats();
+                            },
                           ),
                           _buildModuleItem(
                             title: 'Mock Interviews',
                             icon: Icons.mic_external_on_outlined,
                             gradient: const LinearGradient(colors: [Color(0xFFEC4899), Color(0xFFDB2777)]),
-                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const MockInterviewListPage())),
+                            onTap: () async {
+                              await Navigator.push(context, MaterialPageRoute(builder: (_) => const MockInterviewListPage()));
+                              _loadStats();
+                            },
                           ),
                           _buildModuleItem(
                             title: 'Reports',
