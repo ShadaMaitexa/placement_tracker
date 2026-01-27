@@ -2,13 +2,68 @@ import 'dart:ui';
 import 'package:animate_do/animate_do.dart';
 import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
-import 'package:placement_tracker/core/services/auth_service.dart';
 import 'package:placement_tracker/modules/aptitude/views/aptitude_list_page.dart';
 import 'package:placement_tracker/modules/mock/views/mock_interview_list_page.dart';
+import 'package:placement_tracker/modules/admin/student_list_page.dart';
+import 'package:placement_tracker/modules/admin/reports_page.dart';
+import 'package:placement_tracker/core/services/dashboard_service.dart';
+import 'package:placement_tracker/core/services/aptitude_service.dart';
+import 'package:placement_tracker/core/services/mock_service.dart';
 import '../auth/login_page.dart';
 
-class TrainerHome extends StatelessWidget {
+class TrainerHome extends StatefulWidget {
   const TrainerHome({super.key});
+
+  @override
+  State<TrainerHome> createState() => _TrainerHomeState();
+}
+
+class _TrainerHomeState extends State<TrainerHome> {
+  final _authService = AuthService();
+  final _dashboardService = DashboardService();
+  final _aptService = AptitudeService();
+  final _mockService = MockInterviewService();
+
+  int _totalStudents = 0;
+  int _mockCount = 0;
+  int _testCount = 0;
+  double _avgScore = 0.0;
+  bool _isLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadStats();
+  }
+
+  Future<void> _loadStats() async {
+    setState(() => _isLoading = true);
+    try {
+      final stats = await _dashboardService.getAdminStats();
+      final mocks = await _mockService.getInterviews();
+      final tests = await _aptService.getTests();
+      final results = await _aptService.getResults();
+
+      setState(() {
+        _totalStudents = stats['totalStudents'] ?? 0;
+        _mockCount = mocks.length;
+        _testCount = tests.length;
+        
+        if (results.isNotEmpty) {
+          int totalObtained = 0;
+          int totalMax = 0;
+          for (var r in results) {
+            totalObtained += r.score;
+            totalMax += r.maxScore;
+          }
+          _avgScore = totalMax > 0 ? (totalObtained / totalMax) * 100 : 0.0;
+        }
+        _isLoading = false;
+      });
+    } catch (e) {
+      if (mounted) setState(() => _isLoading = false);
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -82,8 +137,8 @@ class TrainerHome extends StatelessWidget {
                           children: [
                             Expanded(
                               child: _buildStatCard(
-                                '42',
-                                'Students Trained',
+                                _totalStudents.toString(),
+                                'Students',
                                 Icons.people_outline,
                                 const LinearGradient(
                                   colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
@@ -93,8 +148,8 @@ class TrainerHome extends StatelessWidget {
                             const SizedBox(width: 12),
                             Expanded(
                               child: _buildStatCard(
-                                '18',
-                                'Mock Interviews',
+                                _mockCount.toString(),
+                                'Mocks Done',
                                 Icons.mic_none,
                                 const LinearGradient(
                                   colors: [Color(0xFF8B5CF6), Color(0xFF7C3AED)],
@@ -108,8 +163,8 @@ class TrainerHome extends StatelessWidget {
                           children: [
                             Expanded(
                               child: _buildStatCard(
-                                '12',
-                                'Tests Conducted',
+                                _testCount.toString(),
+                                'Tests Created',
                                 Icons.assessment_outlined,
                                 const LinearGradient(
                                   colors: [Color(0xFFF59E0B), Color(0xFFD97706)],
@@ -119,7 +174,7 @@ class TrainerHome extends StatelessWidget {
                             const SizedBox(width: 12),
                             Expanded(
                               child: _buildStatCard(
-                                '85%',
+                                '${_avgScore.toInt()}%',
                                 'Avg. Score',
                                 Icons.trending_up,
                                 const LinearGradient(
@@ -204,17 +259,17 @@ class TrainerHome extends StatelessWidget {
                       delay: const Duration(milliseconds: 600),
                       child: _buildActionCard(
                         context,
-                        title: 'Student Progress',
+                        title: 'Student Directory',
                         subtitle: 'Track individual student performance',
                         icon: Icons.timeline,
                         gradient: const LinearGradient(
                           colors: [Color(0xFF3B82F6), Color(0xFF2563EB)],
                         ),
                         onTap: () {
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            SnackBar(
-                              content: Text('Coming soon!', style: GoogleFonts.inter()),
-                              backgroundColor: const Color(0xFF3B82F6),
+                          Navigator.push(
+                            context,
+                            MaterialPageRoute(
+                              builder: (_) => const StudentListPage(),
                             ),
                           );
                         },

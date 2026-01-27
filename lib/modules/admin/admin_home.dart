@@ -11,6 +11,7 @@ import 'package:placement_tracker/modules/mock/views/mock_interview_list_page.da
 import 'student_list_page.dart';
 import '../auth/login_page.dart';
 import '../../core/services/dashboard_service.dart';
+import 'reports_page.dart';
 
 class AdminHome extends StatefulWidget {
   const AdminHome({super.key});
@@ -238,7 +239,7 @@ class _AdminHomeState extends State<AdminHome> {
                             title: 'Reports',
                             icon: Icons.analytics_outlined,
                             gradient: const LinearGradient(colors: [Color(0xFF14B8A6), Color(0xFF0D9488)]),
-                            onTap: () => ScaffoldMessenger.of(context).showSnackBar(const SnackBar(content: Text('Coming soon!'))),
+                            onTap: () => Navigator.push(context, MaterialPageRoute(builder: (_) => const ReportsPage())),
                           ),
                         ]),
                       ),

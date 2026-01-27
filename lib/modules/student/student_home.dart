@@ -10,6 +10,9 @@ import 'package:placement_tracker/modules/aptitude/views/aptitude_result_page.da
 import 'package:placement_tracker/modules/mock/views/mock_interview_list_page.dart';
 import 'package:placement_tracker/modules/student/models/student_model.dart';
 import 'package:placement_tracker/modules/student/views/student_profile_page.dart';
+import 'package:placement_tracker/core/services/placement_service.dart';
+import 'package:placement_tracker/core/services/mock_service.dart';
+import 'package:placement_tracker/core/services/aptitude_service.dart';
 import '../auth/login_page.dart';
 
 class StudentHome extends StatefulWidget {
@@ -22,8 +25,15 @@ class StudentHome extends StatefulWidget {
 class _StudentHomeState extends State<StudentHome> {
   final _authService = AuthService();
   final _studentService = StudentService();
+  final _placementService = PlacementDriveService();
+  final _mockService = MockInterviewService();
+  final _aptitudeService = AptitudeService();
+
   Student? _student;
   bool _isLoading = true;
+  int _applicationCount = 0;
+  int _interviewCount = 0;
+  double _avgAptitude = 0.0;
 
   @override
   void initState() {
@@ -37,7 +47,35 @@ class _StudentHomeState extends State<StudentHome> {
       final user = _authService.currentUser;
       if (user != null) {
         final student = await _studentService.getStudentByEmail(user.email!);
-        setState(() => _student = student);
+        if (student != null) {
+          _student = student;
+          
+          // Fetch stats in parallel
+          final results = await Future.wait([
+            _placementService.getStudentApplications(student.id!),
+            _mockService.getInterviewsForStudent(student.id!),
+            _aptitudeService.getResultsForStudent(student.id!),
+          ]);
+
+          final apps = results[0] as List<String>;
+          final interviews = results[1] as List;
+          final aptResults = results[2] as List;
+
+          _applicationCount = apps.length;
+          _interviewCount = interviews.length;
+
+          if (aptResults.isNotEmpty) {
+            int totalScore = 0;
+            int totalMax = 0;
+            for (var res in aptResults) {
+              totalScore += (res as dynamic).score as int;
+              totalMax += (res as dynamic).maxScore as int;
+            }
+            _avgAptitude = totalMax > 0 ? (totalScore / totalMax) * 100 : 0.0;
+          } else {
+            _avgAptitude = 0.0;
+          }
+        }
       }
     } catch (e) {
       if (mounted) ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(e.toString())));
@@ -140,11 +178,11 @@ class _StudentHomeState extends State<StudentHome> {
                             builder: (context, constraints) {
                               return Row(
                                 children: [
-                                  Expanded(child: _buildStatCard('-', 'Applications', Icons.send, const Color(0xFF3B82F6))),
+                                  Expanded(child: _buildStatCard(_applicationCount.toString(), 'Applications', Icons.send, const Color(0xFF3B82F6))),
                                   const SizedBox(width: 12),
-                                  Expanded(child: _buildStatCard('-', 'Interviews', Icons.calendar_today, const Color(0xFF8B5CF6))),
+                                  Expanded(child: _buildStatCard(_interviewCount.toString(), 'Interviews', Icons.calendar_today, const Color(0xFF8B5CF6))),
                                   const SizedBox(width: 12),
-                                  Expanded(child: _buildStatCard('-%', 'Aptitude', Icons.trending_up, const Color(0xFF10B981))),
+                                  Expanded(child: _buildStatCard('${_avgAptitude.toInt()}%', 'Aptitude', Icons.trending_up, const Color(0xFF10B981))),
                                 ],
                               );
                             },

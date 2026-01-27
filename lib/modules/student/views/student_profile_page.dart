@@ -5,7 +5,8 @@ import 'package:google_fonts/google_fonts.dart';
 import 'package:placement_tracker/core/services/auth_service.dart';
 import 'package:placement_tracker/core/services/student_service.dart';
 import 'package:placement_tracker/modules/student/models/student_model.dart';
-import 'package:placement_tracker/modules/student/views/available_placements_page.dart';
+import 'package:placement_tracker/modules/placement/views/placement_drive_list_page.dart';
+import 'package:placement_tracker/modules/admin/add_student_page.dart';
 
 class StudentProfilePage extends StatefulWidget {
   const StudentProfilePage({super.key});
@@ -62,6 +63,22 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
           elevation: 0,
           backgroundColor: Colors.transparent,
           foregroundColor: Colors.white,
+          actions: [
+            if (_student != null)
+              IconButton(
+                icon: const Icon(Icons.edit_outlined),
+                onPressed: () async {
+                  final res = await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => AddStudentPage(student: _student),
+                    ),
+                  );
+                  if (res == true) _loadProfile();
+                },
+              ),
+            const SizedBox(width: 8),
+          ],
         ),
         body: _isLoading
             ? const Center(child: CircularProgressIndicator(color: Colors.white))
@@ -197,7 +214,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
         onPressed: () {
           Navigator.push(
             context,
-            MaterialPageRoute(builder: (context) => const AvailablePlacementsPage()),
+            MaterialPageRoute(builder: (context) => const PlacementDriveListPage()),
           );
         },
         style: ElevatedButton.styleFrom(
@@ -213,7 +230,7 @@ class _StudentProfilePageState extends State<StudentProfilePage> {
             const Icon(Icons.work_outline),
             const SizedBox(width: 8),
             Text(
-              'View Available Placements',
+              'View Placement Drives',
               style: GoogleFonts.outfit(fontSize: 16, fontWeight: FontWeight.bold),
             ),
           ],

@@ -122,7 +122,7 @@ class _PlacementDriveListPageState extends State<PlacementDriveListPage> {
                     ),
           ),
         ),
-        floatingActionButton: _userRole == 'placement_officer'
+        floatingActionButton: _userRole == 'admin'
             ? FloatingActionButton.extended(
                 onPressed: () async {
                   await Navigator.push(
